@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>iCOSTA Spin Data</title>
+  <style>
+    /* Your existing styles */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border: 1px solid #32CD32; }
+  </style>
+</head>
+<body>
+  <table id="spinData">
+    <thead><tr><th>Date</th><th>Prize</th><th>Code</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // Get the stored data - handle cases where it doesn't exist
+    const storage = JSON.parse(localStorage.getItem('spinData')) || { spins: [] };
+    const spins = storage.spins || [];
+    const table = document.getElementById('spinData').getElementsByTagName('tbody')[0];
+
+    if (spins.length === 0) {
+      table.innerHTML = '<tr><td colspan="3">No spin history found</td></tr>';
+    } else {
+      spins.forEach(entry => {
+        const row = table.insertRow();
+        // Use timestamp if available, otherwise use current date
+        const date = entry.timestamp ? new Date(entry.timestamp) : new Date();
+        row.insertCell(0).textContent = date.toLocaleString();
+        row.insertCell(1).textContent = entry.prize || 'Unknown';
+        row.insertCell(2).textContent = entry.code || 'None';
+      });
+    }
+  </script>
+</body>
+</html>
