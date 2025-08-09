@@ -9,11 +9,11 @@ function generateCouponCode(prefix) {
 document.addEventListener('DOMContentLoaded', function() {
   // Prize Configuration
   const prizes = [
-    { label: "R50 OFF", details: "🎉 R50 OFF Your Next Repair!", color: "#32CD32", target: "coupons/coupon1.html" },
-    { label: "Screen Protector", details: "🛡️ Free Screen Protector!", color: "#111", target: "coupons/coupon2.html" },
-    { label: "10% OFF", details: "🏷️ 10% Off Next Item", color: "#228B22", target: "coupons/coupon3.html" },
-    { label: "Trade-in", details: "♻️ Trade-in Bonus!", color: "#333", target: "coupons/coupon4.html" },
-    { label: "Wildcard", details: "🎴 Bring a friend, double discount!", color: "#3CB371", target: "coupons/coupon5.html" }
+    { label: "R50 OFF", details: "🎉 R50 OFF Your Next Repair!", color: "#32CD32", target: "coupon1.html" },
+    { label: "Screen Protector", details: "🛡️ Free Screen Protector!", color: "#111", target: "coupon2.html" },
+    { label: "10% OFF", details: "🏷️ 10% Off Next Item", color: "#228B22", target: "coupon3.html" },
+    { label: "Trade-in", details: "♻️ Trade-in Bonus!", color: "#333", target: "coupon4.html" },
+    { label: "Wildcard", details: "🎴 Bring a friend, double discount!", color: "#3CB371", target: "coupon5.html" }
   ];
 
   // Get DOM elements
@@ -204,4 +204,5 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   scheduleDailyReset();
+
 });
