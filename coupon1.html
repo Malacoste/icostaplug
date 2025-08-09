@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iCosta - R50 OFF Coupon</title>
+    <style>
+        body {
+            background: #000;
+            color: #e0e0e0;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .coupon {
+            background: #111;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px limegreen;
+            max-width: 400px;
+            border-left: 5px solid #32CD32;
+        }
+        h1 {
+            color: #32CD32;
+            text-shadow: 0 0 10px rgba(50, 205, 50, 0.5);
+            margin-bottom: 20px;
+        }
+        .code {
+            background: #222;
+            padding: 15px;
+            font-family: monospace;
+            letter-spacing: 3px;
+            margin: 20px 0;
+            border-radius: 5px;
+            color: limegreen;
+            font-size: 24px;
+        }
+        .terms {
+            font-size: 14px;
+            color: #999;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="coupon">
+        <h1>🎉 R50 OFF Your Next Repair!</h1>
+        <p>Present this coupon at any iCosta store</p>
+        <div class="code" id="coupon-code">Loading...</div>
+        <p>Valid until: <span id="expiry-date"></span></p>
+        <p>Valid for any repair over R200</p>
+        <div class="terms">
+            <p>Terms: One use per customer. Not combinable with other offers.</p>
+        </div>
+    </div>
+
+    <button onclick="window.location.href='../index.html'" 
+        style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 20px; cursor: pointer;">
+  Back to Wheel
+</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const couponData = JSON.parse(localStorage.getItem('currentCoupon'));
+            if (couponData) {
+                document.getElementById('coupon-code').textContent = couponData.code;
+                document.getElementById('expiry-date').textContent = couponData.expires;
+            } else {
+                document.getElementById('coupon-code').textContent = 'INVALID CODE';
+            }
+        });
+    </script>
+</body>
+</html>

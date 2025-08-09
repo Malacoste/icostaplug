@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iCosta - 10% OFF Coupon</title>
+    <style>
+        body {
+            background: #000;
+            color: #e0e0e0;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .coupon {
+            background: #111;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px #228B22;
+            max-width: 400px;
+            border-left: 5px solid #228B22;
+        }
+        h1 {
+            color: #228B22;
+            margin-bottom: 20px;
+        }
+        .big-percent {
+            font-size: 72px;
+            color: #228B22;
+            line-height: 1;
+            margin: 20px 0;
+            text-shadow: 0 0 15px rgba(34, 139, 34, 0.7);
+        }
+        .exclusions {
+            font-style: italic;
+            color: #999;
+        }
+        .code {
+            background: #222;
+            padding: 15px;
+            font-family: monospace;
+            letter-spacing: 3px;
+            margin: 20px 0;
+            border-radius: 5px;
+            color: limegreen;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="coupon">
+        <h1>🏷️ 10% OFF Next Item</h1>
+        <div class="big-percent">10% OFF</div>
+        <p>Your entire purchase at iCosta</p>
+        <div class="code" id="coupon-code">Loading...</div>
+        <p>Valid until: <span id="expiry-date"></span></p>
+        <p class="exclusions">(Excludes accessories and already discounted items)</p>
+    </div>
+
+    <button onclick="window.location.href='../index.html'" 
+        style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 20px; cursor: pointer;">
+  Back to Wheel
+</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const couponData = JSON.parse(localStorage.getItem('currentCoupon'));
+            if (couponData) {
+                document.getElementById('coupon-code').textContent = couponData.code;
+                document.getElementById('expiry-date').textContent = couponData.expires;
+            } else {
+                document.getElementById('coupon-code').textContent = 'INVALID CODE';
+            }
+        });
+    </script>
+</body>
+</html>
