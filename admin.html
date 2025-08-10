@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>iCOSTA Spin Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  <script>
+    // Same config as index.html
+    firebase.initializeApp(firebaseConfig);
+    
+    function loadData() {
+      firebase.database().ref('spins').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const table = document.getElementById('data-table');
+        table.innerHTML = '';
+        
+        for (const [key, spin] of Object.entries(data)) {
+          const row = table.insertRow();
+          row.insertCell(0).textContent = new Date(spin.timestamp).toLocaleString();
+          row.insertCell(1).textContent = spin.prize;
+          row.insertCell(2).textContent = spin.code;
+          row.insertCell(3).textContent = spin.device;
+        }
+      });
+    }
+  </script>
+  <style>
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #32CD32; padding: 8px; text-align: left; }
+    body { font-family: Arial; background: #111; color: white; }
+  </style>
+</head>
+<body onload="loadData()">
+  <h1>iCOSTA Spin Data</h1>
+  <table id="data-table">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Prize</th>
+        <th>Code</th>
+        <th>Device</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</body>
+</html>
