@@ -1,3 +1,4 @@
+const db = firebase.database();
 // Generate random coupon codes
 function generateCouponCode(prefix) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -138,6 +139,14 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       const couponCode = generateCouponCode(`ICOSTA-${prizes[index].label.substring(0,3)}`);
+       // Firebase logging
+  db.ref('spins').push({
+    prize: prizes[index].label,
+    code: couponCode,
+    timestamp: firebase.database.ServerValue.TIMESTAMP,
+    device: navigator.platform,
+    page: window.location.href
+  }).catch(error => console.error("Firebase error:", error));
        const expires = new Date();
   expires.setDate(expires.getDate() + 30); // 30 days from now
   
@@ -206,3 +215,4 @@ document.addEventListener('DOMContentLoaded', function() {
   scheduleDailyReset();
 
 });
+
