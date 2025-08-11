@@ -1,46 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- MUST BE IN THIS ORDER -->
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-<script src="spin.js"></script> 
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBAfSH9FgESDvb4QHBEVF9l13zblWdLcg8",
-  authDomain: "icostaplug.firebaseapp.com",
-  databaseURL: "https://icostaplug-default-rtdb.firebaseio.com/",
-  projectId: "icostaplug",
-  storageBucket: "icostaplug.firebasestorage.app",
-  messagingSenderId: "911201863766",
-  appId: "1:911201863766:web:7cf34a8f189d47e9cb53f7",
-  measurementId: "G-DDHNV5P32Z"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>iCosta Prize Wheel</title>
   <link rel="stylesheet" href="styles.css">
+  
+  <!-- Firebase MUST come first -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  
+  <!-- Then other scripts -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  
+  <script>
+    // Firebase config - USE YOUR ACTUAL CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyBAfSH9FgESDvb4QHBEVF9l13zblWdLcg8",
+      authDomain: "icostaplug.firebaseapp.com",
+      databaseURL: "https://icostaplug-default-rtdb.firebaseio.com",
+      projectId: "icostaplug",
+      storageBucket: "icostaplug.appspot.com",
+      messagingSenderId: "911201863766",
+      appId: "1:911201863766:web:7cf34a8f189d47e9cb53f7"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
 </head>
 <body>
   <div class="container">
     <h1>🎰 iCosta Plug Wheel</h1>
     <canvas id="wheel"></canvas>
-   <div class="wheel-pointer">▼</div>
-
+    <div class="wheel-pointer">▼</div>
     <button id="spinButton">SPIN NOW</button>
     <div id="spin-message">Spin to win amazing iCosta rewards!</div>
   </div>
+  
+  <!-- Your spin.js MUST come after Firebase init -->
   <script src="spin.js"></script>
 </body>
-
 </html>
 
 
