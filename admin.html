@@ -5,7 +5,18 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
   <script>
-    // Same config as index.html
+    // Your Firebase config - REPLACE WITH YOUR ACTUAL CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyABCD...",
+      authDomain: "your-project.firebaseapp.com",
+      databaseURL: "https://your-project.firebaseio.com",
+      projectId: "your-project",
+      storageBucket: "your-project.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcd1234"
+    };
+    
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     
     function loadData() {
@@ -14,12 +25,21 @@
         const table = document.getElementById('data-table');
         table.innerHTML = '';
         
-        for (const [key, spin] of Object.entries(data)) {
-          const row = table.insertRow();
-          row.insertCell(0).textContent = new Date(spin.timestamp).toLocaleString();
-          row.insertCell(1).textContent = spin.prize;
-          row.insertCell(2).textContent = spin.code;
-          row.insertCell(3).textContent = spin.device;
+        // Add header row
+        const headerRow = table.insertRow();
+        headerRow.insertCell(0).textContent = 'Time';
+        headerRow.insertCell(1).textContent = 'Prize';
+        headerRow.insertCell(2).textContent = 'Code';
+        headerRow.insertCell(3).textContent = 'Device';
+        
+        if (data) {
+          for (const [key, spin] of Object.entries(data)) {
+            const row = table.insertRow();
+            row.insertCell(0).textContent = new Date(spin.timestamp).toLocaleString();
+            row.insertCell(1).textContent = spin.prize;
+            row.insertCell(2).textContent = spin.code;
+            row.insertCell(3).textContent = spin.device;
+          }
         }
       });
     }
@@ -27,20 +47,13 @@
   <style>
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #32CD32; padding: 8px; text-align: left; }
-    body { font-family: Arial; background: #111; color: white; }
+    th { background-color: #32CD32; color: black; }
+    body { font-family: Arial; background: #111; color: white; margin: 20px; }
   </style>
 </head>
 <body onload="loadData()">
   <h1>iCOSTA Spin Data</h1>
   <table id="data-table">
-    <thead>
-      <tr>
-        <th>Time</th>
-        <th>Prize</th>
-        <th>Code</th>
-        <th>Device</th>
-      </tr>
-    </thead>
     <tbody></tbody>
   </table>
 </body>
