@@ -4,33 +4,24 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
 <script src="spin.js"></script> 
-  // PASTE YOUR CONFIG HERE (from Firebase)
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyBAfSH9FgESDvb4QHBEVF9l13zblWdLcg8",
-    authDomain: "https://icostaplug.netlify.app/",
-    databaseURL: "https://icostaplug-default-rtdb.firebaseio.com",
-    projectId: "ccddf59f-2931-44bb-bfb7-11d592bdb1c3",
-    storageBucket: "icostaplug.firebasestorage.app",
-    messagingSenderId: "911201863766",
-    appId: "1:911201863766:web:7cf34a8f189d47e9cb53f7",
-    measurementId: "G-DDHNV5P32Z"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBAfSH9FgESDvb4QHBEVF9l13zblWdLcg8",
+  authDomain: "icostaplug.firebaseapp.com",
+  databaseURL: "https://icostaplug-default-rtdb.firebaseio.com/",
+  projectId: "icostaplug",
+  storageBucket: "icostaplug.firebasestorage.app",
+  messagingSenderId: "911201863766",
+  appId: "1:911201863766:web:7cf34a8f189d47e9cb53f7",
+  measurementId: "G-DDHNV5P32Z"
+};
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-</script>
-</script>
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,6 +42,7 @@
 </body>
 
 </html>
+
 
 
 
