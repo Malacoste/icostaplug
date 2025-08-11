@@ -5,55 +5,20 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
   <script>
-    // USE THE SAME CONFIG AS index.html
-    const firebaseConfig = { ... }; // PASTE YOUR CONFIG HERE
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
+   
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyBAfSH9FgESDvb4QHBEVF9l13zblWdLcg8",
-    authDomain: "icostaplug.firebaseapp.com",
-    databaseURL: "https://icostaplug-default-rtdb.firebaseio.com",
-    projectId: "icostaplug",
-    storageBucket: "icostaplug.firebasestorage.app",
-    messagingSenderId: "911201863766",
-    appId: "1:911201863766:web:7cf34a8f189d47e9cb53f7",
-    measurementId: "G-DDHNV5P32Z"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBAfSH9FgESDvb4QHBEVF9l13zblWdLcg8",
+  authDomain: "icostaplug.firebaseapp.com",
+  databaseURL: "https://icostaplug-default-rtdb.firebaseio.com",
+  projectId: "icostaplug",
+  storageBucket: "icostaplug.firebasestorage.app",
+  messagingSenderId: "911201863766",
+  appId: "1:911201863766:web:7cf34a8f189d47e9cb53f7",
+  measurementId: "G-DDHNV5P32Z"
+};
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-    
-    firebase.initializeApp(firebaseConfig);
-
-    function loadSpins() {
-      firebase.database().ref('spins').on('value', (snapshot) => {
-        const spins = snapshot.val();
-        const table = document.getElementById('spins-table');
-        table.innerHTML = '';
-
-        if (!spins) {
-          table.innerHTML = '<tr><td colspan="4">No spins yet!</td></tr>';
-          return;
-        }
-
-        Object.entries(spins).forEach(([key, spin]) => {
-          const row = table.insertRow();
-          row.insertCell(0).textContent = new Date(spin.timestamp).toLocaleString();
-          row.insertCell(1).textContent = spin.prize;
-          row.insertCell(2).textContent = spin.code;
-          row.insertCell(3).textContent = spin.device || 'Unknown';
-        });
-      });
-    }
+ 
   </script>
 </head>
 <body onload="loadSpins()">
