@@ -2,31 +2,68 @@
 <html>
 <head>
   <title>iCosta Spin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+    th { background-color: #32CD32; color: white; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+  </style>
+  
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+  
   <script>
-   
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBAfSH9FgESDvb4QHBEVF9l13zblWdLcg8",
-  authDomain: "icostaplug.firebaseapp.com",
-  databaseURL: "https://icostaplug-default-rtdb.firebaseio.com",
-  projectId: "icostaplug",
-  storageBucket: "icostaplug.firebasestorage.app",
-  messagingSenderId: "911201863766",
-  appId: "1:911201863766:web:7cf34a8f189d47e9cb53f7",
-  measurementId: "G-DDHNV5P32Z"
-};
-
- 
+    // USE THE SAME CONFIG AS index.html
+    const firebaseConfig = {
+      apiKey: "AIzaSyBAfSH9FgESDvb4QHBEVF9l13zblWdLcg8",
+      authDomain: "icostaplug.firebaseapp.com",
+      databaseURL: "https://icostaplug-default-rtdb.firebaseio.com",
+      projectId: "icostaplug",
+      storageBucket: "icostaplug.appspot.com",
+      messagingSenderId: "911201863766",
+      appId: "1:911201863766:web:7cf34a8f189d47e9cb53f7"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    
+    function loadSpins() {
+      const db = firebase.database();
+      const spinsRef = db.ref('spins');
+      
+      spinsRef.orderByChild('timestamp').limitToLast(50).on('value', (snapshot) => {
+        const spinsData = snapshot.val();
+        const tableBody = document.getElementById('spins-table').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = '';
+        
+        if (spinsData) {
+          Object.entries(spinsData).forEach(([key, spin]) => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = new Date(spin.timestamp).toLocaleString();
+            row.insertCell(1).textContent = spin.prize;
+            row.insertCell(2).textContent = spin.code;
+            row.insertCell(3).textContent = spin.device || 'Unknown';
+          });
+        } else {
+          tableBody.innerHTML = '<tr><td colspan="4">No spins recorded yet</td></tr>';
+        }
+      });
+    }
   </script>
 </head>
 <body onload="loadSpins()">
   <h1>iCosta Spin Dashboard</h1>
-  <table id="spins-table" border="1">
+  <p>Showing last 50 spins</p>
+  
+  <table id="spins-table">
     <thead>
       <tr>
-        <th>Time</th><th>Prize</th><th>Code</th><th>Device</th>
+        <th>Time</th>
+        <th>Prize</th>
+        <th>Code</th>
+        <th>Device</th>
       </tr>
     </thead>
     <tbody></tbody>
