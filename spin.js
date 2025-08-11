@@ -1,6 +1,3 @@
-// Initialize Firebase database reference
-const db = firebase.database();
-const spinsRef = db.ref('spins');
 // Generate random coupon codes
 function generateCouponCode(prefix) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -8,6 +5,10 @@ function generateCouponCode(prefix) {
     chars.charAt(Math.floor(Math.random() * chars.length))).join('');
   return `${prefix}-${randomPart}`;
 }
+
+  // Initialize Firebase database reference
+  const database = firebase.database();
+  const spinsRef = database.ref('spins');
 
 document.addEventListener('DOMContentLoaded', function() {
   // Prize Configuration
@@ -132,63 +133,56 @@ document.addEventListener('DOMContentLoaded', function() {
       else finishSpin(winningIndex);
     }
     
-    function finishSpin(index) {
-      confetti({
-        particleCount: 200,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#32CD32', '#ffffff', '#000000']
-      });
+function finishSpin(index) {
+    // Confetti celebration
+    confetti({
+      particleCount: 200,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#32CD32', '#ffffff', '#000000']
+    });
 
-      const couponCode = generateCouponCode(`ICOSTA-${prizes[index].label.substring(0,3)}`);
-       const expires = new Date();
-  expires.setDate(expires.getDate() + 30); // 30 days from now
+    const couponCode = generateCouponCode(`ICOSTA-${prizes[index].label.substring(0,3)}`);
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 30);
 
-  // Log to Firebase
-  spinsRef.push({
-    prize: prizes[index].label,
-    code: couponCode,
-    timestamp: firebase.database.ServerValue.TIMESTAMP,
-    device: navigator.userAgent.slice(0, 100) // Truncate long user agent
-  }).catch(error => {
-    console.error("Firebase error:", error);
-  });
-}
-  // Store coupon data in localStorage
-  const couponData = {
-    code: couponCode,
-    expires: expires.toLocaleDateString(),
-    prize: prizes[index].label
-  };
-  localStorage.setItem('currentCoupon', JSON.stringify(couponData));
-     
-   const spinData = JSON.parse(localStorage.getItem('spinData') || '{"spins":[]}');
-  spinData.spins.push({
-    timestamp: Date.now(),
-    prize: prizes[index].label,
-    code: couponCode
-  });
-  localStorage.setItem('spinData', JSON.stringify(spinData));
+    // 1. Store in Firebase
+    spinsRef.push({
+      prize: prizes[index].label,
+      code: couponCode,
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      device: navigator.userAgent.slice(0, 120),
+      redeemed: false
+    }).then(() => {
+      console.log("Spin logged to Firebase");
+    }).catch(error => {
+      console.error("Firebase error:", error);
+    });
 
-  
-  messageBox.innerHTML = `
-        <strong>🎉 ${prizes[index].label}</strong><br>
-        ${prizes[index].details}<br>
-        <small>Code: ${couponCode}</small>
-      `;
-      
-      // Update spin tracking
-      lastSpinTime = Date.now();
-      localStorage.setItem('lastSpinTime', lastSpinTime);
-      localStorage.setItem('lastSpinDate', new Date().toDateString());
-      
-      // Start cooldown
-      updateCooldownStatus();
-      
-      setTimeout(() => {
-        window.location.href = prizes[index].target;
-      }, 3000);
-    }
+    // 2. Store in localStorage for coupon page
+    localStorage.setItem('currentCoupon', JSON.stringify({
+      code: couponCode,
+      prize: prizes[index].label,
+      expires: expires.toLocaleDateString()
+    }));
+
+    // 3. Update UI
+    messageBox.innerHTML = `
+      <strong>🎉 ${prizes[index].label}</strong><br>
+      ${prizes[index].details}<br>
+      <small>Code: ${couponCode}</small>
+    `;
+
+    // Update spin tracking
+    lastSpinTime = Date.now();
+    localStorage.setItem('lastSpinTime', lastSpinTime);
+    localStorage.setItem('lastSpinDate', new Date().toDateString());
+    
+    // Redirect after delay
+    setTimeout(() => {
+      window.location.href = prizes[index].target;
+    }, 3000);
+  }
     
     animate();
   }
@@ -219,6 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
   scheduleDailyReset();
 
 });
+
 
 
 
