@@ -1,4 +1,4 @@
-// Firebase Database Reference
+// Initialize Firebase database reference
 const db = firebase.database();
 const spinsRef = db.ref('spins');
 // Generate random coupon codes
@@ -141,18 +141,19 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       const couponCode = generateCouponCode(`ICOSTA-${prizes[index].label.substring(0,3)}`);
-     // Log spin to Firebase
+       const expires = new Date();
+  expires.setDate(expires.getDate() + 30); // 30 days from now
+
+  // Log to Firebase
   spinsRef.push({
     prize: prizes[index].label,
     code: couponCode,
     timestamp: firebase.database.ServerValue.TIMESTAMP,
-    device: navigator.userAgent.slice(0, 100) // Shortens long device info
+    device: navigator.userAgent.slice(0, 100) // Truncate long user agent
   }).catch(error => {
-    console.error("🔥 Firebase Error:", error);
+    console.error("Firebase error:", error);
   });
-       const expires = new Date();
-  expires.setDate(expires.getDate() + 30); // 30 days from now
-  
+}
   // Store coupon data in localStorage
   const couponData = {
     code: couponCode,
@@ -218,5 +219,6 @@ document.addEventListener('DOMContentLoaded', function() {
   scheduleDailyReset();
 
 });
+
 
 
