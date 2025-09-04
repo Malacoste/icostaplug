@@ -3,77 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iCosta - Trade-in Bonus</title>
+    <title>iCOSTA - Trade-in Bonus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --icosta-green: #32CD32;
+            --dark-bg: #111;
+            --card-bg: #1a1a1a;
+            --text-light: #e0e0e0;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             background: #000;
-            color: #e0e0e0;
+            color: var(--text-light);
             font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .coupon {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px var(--icosta-green);
+            max-width: 500px;
+            width: 100%;
+            border-left: 5px solid var(--icosta-green);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--icosta-green);
+            text-shadow: 0 0 10px rgba(50, 205, 50, 0.5);
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .code {
+            background: #222;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+            margin: 25px 0;
+            border-radius: 8px;
+            color: var(--icosta-green);
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px dashed var(--icosta-green);
+        }
+        
+        .coupon-details {
+            margin: 20px 0;
+            text-align: left;
+            background: #222;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .detail-label {
+            color: #999;
+            font-weight: bold;
+        }
+        
+        .detail-value {
+            color: var(--text-light);
+        }
+        
+        .terms {
+            font-size: 14px;
+            color: #999;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+        
+        .personalized-message {
+            color: var(--icosta-green);
+            font-style: italic;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(50, 205, 50, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--icosta-green);
+        }
+        
+        .share-btn {
+            background: var(--icosta-green);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 15px 0;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 205, 50, 0.4);
+        }
+        
+        .inventory {
+            margin: 30px 0;
+            padding: 25px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border-top: 3px solid var(--icosta-green);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .inventory h3 {
+            color: var(--icosta-green);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .item {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .item p {
+            margin: 8px 0;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .item span {
+            color: var(--icosta-green);
+            font-weight: bold;
+        }
+        
+        .trade-in-value {
+            color: #25d366;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .btn {
+            background: var(--icosta-green);
+            color: #000;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            gap: 10px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 205, 50, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #333;
+            color: var(--text-light);
+        }
+        
+        .btn-secondary:hover {
+            background: #444;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .whatsapp-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25d366;
+            color: #FFF;
+            border-radius: 50px;
             text-align: center;
+            font-size: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
         }
-        .coupon {
-            background: #111;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 25px #333;
-            max-width: 400px;
-            border-left: 5px solid #333;
+        
+        .whatsapp-float:hover {
+            transform: scale(1.05);
+            background-color: #128C7E;
         }
-        h1 {
-            color: #e0e0e0;
-            margin-bottom: 20px;
-        }
-        .bonus-amount {
-            font-size: 48px;
-            color: limegreen;
-            margin: 20px 0;
-        }
-        .device-list {
-            text-align: left;
-            margin: 20px 0;
-            padding-left: 20px;
-        }
-        .code {
-            background: #222;
-            padding: 15px;
-            font-family: monospace;
-            letter-spacing: 3px;
-            margin: 20px 0;
-            border-radius: 5px;
-            color: limegreen;
-            font-size: 24px;
+        
+        @media (max-width: 600px) {
+            .coupon {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .code {
+                font-size: 18px;
+                padding: 15px;
+            }
+            
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .whatsapp-float {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                bottom: 15px;
+                right: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="coupon">
-        <h1>♻️ Trade-in Bonus!</h1>
+        <h1 id="coupon-title">♻️ Trade-in Bonus!</h1>
         <p>Get extra value for your old device</p>
-        <div class="bonus-amount">+R100</div>
-        <p>Added to your trade-in value</p>
-        
-        <div class="device-list">
-            <p>Works with:</p>
-            <ul>
-                <li>Smartphones</li>
-                <li>Tablets</li>
-                <li>Laptops</li>
-            </ul>
-        </div>
         
         <div class="code" id="coupon-code">Loading...</div>
-        <p>Valid until: <span id="expiry-date"></span></p>
+        
+        <p id="personalized-message" class="personalized-message"></p>
+        
+        <div class="coupon-details">
+            <div class="detail-item">
+                <span class="detail-label">Valid Until:</span>
+                <span class="detail-value" id="expiry-date"></span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Bonus:</span>
+                <span class="detail-value">Extra R200 Trade-in Value</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Device Condition:</span>
+                <span class="detail-value">Any Condition Accepted</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Terms:</span>
+                <span class="detail-value">Must purchase new device</span>
+            </div>
+        </div>
+        
+        <button onclick="sharePrize()" class="share-btn">
+            <i class="fab fa-whatsapp"></i> Share to iCOSTA
+        </button>
+        
+        <div class="terms">
+            <p>Terms: Get R200 extra on your trade-in value. Device must power on. Screen damage accepted. Bonus applied toward purchase of new device. Not valid with other trade-in promotions.</p>
+        </div>
     </div>
 
-    <button onclick="window.location.href='../index.html'" 
-        style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 20px; cursor: pointer;">
-  Back to Wheel
-</button>
+    <div class="inventory">
+        <h3>Upgrade Your Device</h3>
+        <div class="items-grid">
+            <div class="item">
+                <img src="https://images.unsplash.com/photo-1695048133142-4cdef95ff5f7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="iPhone 15 Pro">
+                <p>iPhone 15 Pro</p>
+                <span>From R15,999</span>
+                <div class="trade-in-value">Get up to R3,000 for your old iPhone</div>
+            </div>
+            <div class="item">
+                <img src="https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Samsung Z Flip">
+                <p>Samsung Z Flip5</p>
+                <span>From R16,499</span>
+                <div class="trade-in-value">Get up to R2,800 for your old device</div>
+            </div>
+            <div class="item">
+                <img src="https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="iPhone 14 Pro">
+                <p>iPhone 14 Pro</p>
+                <span>From R13,999</span>
+                <div class="trade-in-value">Get up to R2,500 for your old iPhone</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="https://wa.me/27672505124?text=Hi%20iCOSTA,%20I%20want%20to%20trade%20in%20my%20device%20with%20my%20bonus%20coupon" target="_blank" class="btn">
+            <i class="fab fa-whatsapp"></i> Trade In Now
+        </a>
+        <button onclick="window.location.href='index.html'" class="btn btn-secondary">
+            <i class="fas fa-sync-alt"></i> Back to Spin Wheel
+        </button>
+    </div>
+
+    <a href="https://wa.me/27672505124?text=Hi%20iCOSTA,%20I%20have%20a%20question%20about%20trading%20in%20my%20device" target="_blank" class="whatsapp-float">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -81,10 +367,27 @@
             if (couponData) {
                 document.getElementById('coupon-code').textContent = couponData.code;
                 document.getElementById('expiry-date').textContent = couponData.expires;
+                
+                // Display personalized message if available
+                if (couponData.personalized) {
+                    document.getElementById('personalized-message').textContent = couponData.personalized;
+                }
             } else {
-                document.getElementById('coupon-code').textContent = 'INVALID CODE';
+                document.getElementById('coupon-code').textContent = 'INVALID OR EXPIRED';
+                document.getElementById('coupon-title').textContent = 'Coupon Not Found';
+                document.getElementById('personalized-message').textContent = 'Please spin the wheel to get a valid coupon.';
             }
         });
+
+        function sharePrize() {
+            const couponData = JSON.parse(localStorage.getItem('currentCoupon'));
+            if (couponData) {
+                const message = `Hi iCOSTA, I won a trade-in bonus! Code: ${couponData.code}`;
+                window.open(`https://wa.me/27672505124?text=${encodeURIComponent(message)}`, '_blank');
+            } else {
+                alert('No coupon found. Please spin the wheel first.');
+            }
+        }
     </script>
 </body>
 </html>

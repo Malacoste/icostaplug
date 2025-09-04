@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iCOSTA - User Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --icosta-green: #32CD32;
+            --dark-bg: #111;
+            --card-bg: #1a1a1a;
+            --text-light: #e0e0e0;
+            --error-red: #ff4444;
+            --warning-orange: #ff9900;
+            --success-green: #00C851;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .logo {
+            width: 150px;
+            border-radius: 10px;
+            border: 2px solid var(--icosta-green);
+            box-shadow: 0 0 15px rgba(50, 205, 50, 0.3);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        /* Navigation */
+        .navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .nav-btn {
+            background: #222;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-width: 120px;
+            justify-content: center;
+        }
+        
+        .nav-btn:hover {
+            background: #333;
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.active {
+            background: var(--icosta-green);
+            color: #000;
+            box-shadow: 0 4px 12px rgba(50, 205, 50, 0.3);
+        }
+        
+        /* Buttons */
+        .btn {
+            background: var(--icosta-green);
+            color: #000;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(50, 205, 50, 0.3);
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .btn-danger {
+            background: var(--error-red);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: var(--warning-orange);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #444;
+            color: white;
+        }
+        
+        /* Profile content */
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+        
+        @media (max-width: 968px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Profile card */
+        .profile-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--icosta-green);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .profile-card h2 {
+            color: var(--icosta-green);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* User info */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            position: relative;
+        }
+        
+        .avatar-user {
+            background: linear-gradient(135deg, var(--icosta-green), #228B22);
+        }
+        
+        .avatar-admin {
+            background: linear-gradient(135deg, #ff9900, #ff6600);
+        }
+        
+        .avatar-tester {
+            background: linear-gradient(135deg, #3366cc, #003399);
+        }
+        
+        .avatar-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #000;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .user-details h3 {
+            color: var(--icosta-green);
+            margin-bottom: 8px;
+            font-size: 1.5rem;
+        }
+        
+        .user-role {
+            background: #333;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        /* Stats grid */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--icosta-green);
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        /* Content sections */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Coupons */
+        .coupon-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .coupon-item {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--icosta-green);
+            transition: all 0.3s;
+        }
+        
+        .coupon-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        
+        .coupon-item.expired {
+            opacity: 0.6;
+            border-left-color: #999;
+        }
+        
+        .coupon-item.redeemed {
+            border-left-color: var(--success-green);
+        }
+        
+        .coupon-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .coupon-title {
+            font-size: 1.2rem;
+            color: var(--icosta-green);
+            margin: 0;
+        }
+        
+        .coupon-status {
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-active {
+            background: var(--success-green);
+            color: #000;
+        }
+        
+        .status-expired {
+            background: #666;
+            color: #fff;
+        }
+        
+        .status-redeemed {
+            background: var(--icosta-green);
+            color: #000;
+        }
+        
+        .coupon-code {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            color: var(--icosta-green);
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        
+        .coupon-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .detail-label {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .detail-value {
+            font-weight: bold;
+        }
+        
+        .coupon-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* History */
+        .history-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .history-item {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+        
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .history-info {
+            flex-grow: 1;
+            min-width: 250px;
+            position: relative;
+        }
+        
+        .history-prize {
+            color: var(--icosta-green);
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .history-date {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .history-device {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .history-code {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: var(--icosta-green);
+            border: 1px solid #333;
+        }
+        
+        /* Inventory */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .inventory-item {
+            background: #222;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .inventory-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .inventory-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #333;
+        }
+        
+        .inventory-details {
+            padding: 20px;
+        }
+        
+        .inventory-details h3 {
+            color: var(--icosta-green);
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+        
+        .inventory-price {
+            color: var(--icosta-green);
+            font-weight: bold;
+            font-size: 1.3rem;
+            margin: 10px 0;
+        }
+        
+        .inventory-description {
+            color: #999;
+            margin: 10px 0;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .inventory-specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+        
+        .spec-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .spec-item i {
+            color: var(--icosta-green);
+            width: 16px;
+        }
+        
+        .inventory-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .sold-out {
+            position: relative;
+        }
+        
+        .sold-out::after {
+            content: "SOLD OUT";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            z-index: 2;
+        }
+        
+        .sold-out::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+        
+        /* Settings */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--icosta-green);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--icosta-green);
+        }
+        
+        .form-group input:disabled {
+            background: #333;
+            color: #999;
+        }
+        
+        .security-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        
+        /* Empty states */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #333;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            color: #999;
+            margin-bottom: 10px;
+        }
+        
+        /* Loading spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(50, 205, 50, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--icosta-green);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-actions {
+                justify-content: center;
+            }
+            
+            .navigation {
+                justify-content: center;
+            }
+            
+            .nav-btn {
+                min-width: 100px;
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+            
+            .user-info {
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .coupon-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .history-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .inventory-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .inventory-specs {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .coupon-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .coupon-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .inventory-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <img src="https://i.imgur.com/Rs7AkMV.jpg" class="logo" alt="iCOSTA Logo" onerror="this.src='https://via.placeholder.com/150x60/32CD32/000000?text=iCOSTA'">
+            <div class="header-actions">
+                <a href="index.html" class="btn"><i class="fas fa-home"></i> Home</a>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+            <button class="nav-btn active" data-target="profile">
+                <i class="fas fa-user"></i> Profile
+            </button>
+            <button class="nav-btn" data-target="coupons">
+                <i class="fas fa-ticket-alt"></i> My Coupons
+                <span id="coupons-badge" class="badge">3</span>
+            </button>
+            <button class="nav-btn" data-target="history">
+                <i class="fas fa-history"></i> Spin History
+            </button>
+            <button class="nav-btn" data-target="inventory">
+                <i class="fas fa-shopping-bag"></i> Inventory
+            </button>
+            <button class="nav-btn admin-only" data-target="admin" style="display: none;">
+                <i class="fas fa-crown"></i> Admin Panel
+            </button>
+            <button class="nav-btn" data-target="settings">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Profile Section -->
+            <div class="content-section active" id="profile-section">
+                <div class="profile-card">
+                    <div class="user-info">
+                        <div class="avatar avatar-user" id="user-avatar">
+                            <i class="fas fa-user"></i>
+                            <div class="avatar-badge" id="role-badge">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                        <div class="user-details">
+                            <h3 id="profile-username">Sipho Nkosi</h3>
+                            <span class="user-role" id="profile-role">Premium Member</span>
+                            <p>Member since: <span id="member-since">Jan 2023</span></p>
+                            <p>Last login: <span id="last-login">Today, 14:30</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-spins">12</div>
+                            <div class="stat-label">Total Spins</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="coupons-won">5</div>
+                            <div class="stat-label">Coupons Won</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="available-spins">2</div>
+                            <div class="stat-label">Spins Available</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="redemption-rate">60%</div>
+                            <div class="stat-label">Redemption Rate</div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-only" style="display: none; margin-top: 25px;">
+                        <h3><i class="fas fa-crown"></i> Administrator Tools</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                            <button class="btn btn-secondary" onclick="viewAdminDashboard()">
+                                <i class="fas fa-chart-line"></i> View Analytics
+                            </button>
+                            <button class="btn btn-secondary" onclick="manageUsers()">
+                                <i class="fas fa-users"></i> Manage Users
+                            </button>
+                            <button class="btn btn-secondary" onclick="manageInventory()">
+                                <i class="fas fa-box-open"></i> Manage Inventory
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coupons Section -->
+            <div class="content-section" id="coupons-section">
+                <div class="profile-card">
+                    <h2><i class="fas fa-ticket-alt"></i> My Coupons</h2>
+                    <div class="coupon-list">
+                        <div class="coupon-item">
+                            <div class="coupon-header">
+                                <h3 class="coupon-title">R50 OFF Repair</h3>
+                                <span class="coupon-status status-active">Active</span>
+                            </div>
+                            
+                            <div class="coupon-code">ICO50-X8J9F3</div>
+                            
+                            <div class="coupon-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">Valid Until</span>
+                                    <span class="detail-value">15 Dec 2023</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Personalized</span>
+                                    <span class="detail-value">iPhone Screen Repair</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Status</span>
+                                    <span class="detail-value">Active</span>
+                                </div>
+                            </div>
+                            
+                            <div class="coupon-actions">
+                                <button class="btn btn-sm" onclick="shareCoupon('R50 OFF Repair', 'ICO50-X8J9F3')">
+                                    <i class="fab fa-whatsapp"></i> Share
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="markAsRedeemed('ICO50-X8J9F3')">
+                                    <i class="fas fa-check"></i> Mark Redeemed
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="coupon-item redeemed">
+                            <div class="coupon-header">
+                                <h3 class="coupon-title">Free Screen Protector</h3>
+                                <span class="coupon-status status-redeemed">Redeemed</span>
+                            </div>
+                            
+                            <div class="coupon-code">ICOSCREEN-7B2K9L</div>
+                            
+                            <div class="coupon-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">Valid Until</span>
+                                    <span class="detail-value">10 Nov 2023</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Personalized</span>
+                                    <span class="detail-value">iPhone 14 Pro</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Status</span>
+                                    <span class="detail-value">Redeemed on 05 Nov 2023</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="coupon-item expired">
+                            <div class="coupon-header">
+                                <h3 class="coupon-title">10% OFF Accessories</h3>
+                                <span class="coupon-status status-expired">Expired</span>
+                            </div>
+                            
+                            <div class="coupon-code">ICO10-P4M7Q2</div>
+                            
+                            <div class="coupon-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">Valid Until</span>
+                                    <span class="detail-value">20 Oct 2023</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Personalized</span>
+                                    <span class="detail-value">All Accessories</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Status</span>
+                                    <span class="detail-value">Expired</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="content-section" id="history-section">
+                <div class="profile-card">
+                    <h2><i class="fas fa-history"></i> Spin History</h2>
+                    <div class="history-list">
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-prize"><i class="fas fa-tag"></i> R50 OFF Repair</div>
+                                <div class="history-date">Today, 14:30</div>
+                                <div class="history-device">iPhone 12 Pro • Safari</div>
+                            </div>
+                            <div class="history-code">ICO50-X8J9F3</div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-prize"><i class="fas fa-shield-alt"></i> Free Screen Protector</div>
+                                <div class="history-date">05 Nov 2023, 10:15</div>
+                                <div class="history-device">Samsung Galaxy S21 • Chrome</div>
+                            </div>
+                            <div class="history-code">ICOSCREEN-7B2K9L</div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-prize"><i class="fas fa-times-circle"></i> Better luck next time!</div>
+                                <div class="history-date">02 Nov 2023, 16:45</div>
+                                <div class="history-device">iPad Air • Safari</div>
+                            </div>
+                            <div class="history-code">No win</div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-prize"><i class="fas fa-percent"></i> 10% OFF Accessories</div>
+                                <div class="history-date">15 Oct 2023, 09:30</div>
+                                <div class="history-device">iPhone 13 • Chrome</div>
+                            </div>
+                            <div class="history-code">ICO10-P4M7Q2</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Section -->
+            <div class="content-section" id="inventory-section">
+                <div class="profile-card">
+                    <h2><i class="fas fa-shopping-bag"></i> Featured Devices</h2>
+                    <div class="inventory-grid">
+                        <div class="inventory-item">
+                            <img src="https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="iPhone 14 Pro" class="inventory-image">
+                            <div class="inventory-details">
+                                <h3>iPhone 14 Pro</h3>
+                                <div class="inventory-price">R15,499</div>
+                                <div class="inventory-description">Brand new sealed unit with 100% battery health and 1-year warranty</div>
+                                
+                                <div class="inventory-specs">
+                                    <div class="spec-item"><i class="fas fa-microchip"></i> A16 Bionic Chip</div>
+                                    <div class="spec-item"><i class="fas fa-hdd"></i> 128GB Storage</div>
+                                    <div class="spec-item"><i class="fas fa-camera"></i> Triple 12MP Camera</div>
+                                    <div class="spec-item"><i class="fas fa-battery-full"></i> 100% Health</div>
+                                </div>
+                                
+                                <div class="inventory-actions">
+                                    <button class="btn btn-sm">View Details</button>
+                                    <button class="btn btn-sm btn-secondary">Add to Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="inventory-item">
+                            <img src="https://images.unsplash.com/photo-1611472173362-3f53dbd65d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Samsung Galaxy S23" class="inventory-image">
+                            <div class="inventory-details">
+                                <h3>Samsung Galaxy S23</h3>
+                                <div class="inventory-price">R12,999</div>
+                                <div class="inventory-description">Excellent condition, 90%+ battery health, 6-month warranty</div>
+                                
+                                <div class="inventory-specs">
+                                    <div class="spec-item"><i class="fas fa-microchip"></i> Snapdragon 8 Gen 2</div>
+                                    <div class="spec-item"><i class="fas fa-hdd"></i> 256GB Storage</div>
+                                    <div class="spec-item"><i class="fas fa-camera"></i> 50MP Main Camera</div>
+                                    <div class="spec-item"><i class="fas fa-battery-three-quarters"></i> 92% Health</div>
+                                </div>
+                                
+                                <div class="inventory-actions">
+                                    <button class="btn btn-sm">View Details</button>
+                                    <button class="btn btn-sm btn-secondary">Add to Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="inventory-item sold-out">
+                            <img src="https://images.unsplash.com/photo-1695048133142-4cdef95ff5f7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="iPhone 15 Pro" class="inventory-image">
+                            <div class="inventory-details">
+                                <h3>iPhone 15 Pro</h3>
+                                <div class="inventory-price">R18,999</div>
+                                <div class="inventory-description">Coming soon - Pre-order now to secure your unit</div>
+                                
+                                <div class="inventory-specs">
+                                    <div class="spec-item"><i class="fas fa-microchip"></i> A17 Pro Chip</div>
+                                    <div class="spec-item"><i class="fas fa-hdd"></i> 256GB Storage</div>
+                                    <div class="spec-item"><i class="fas fa-camera"></i> 48MP Main Camera</div>
+                                    <div class="spec-item"><i class="fas fa-bolt"></i> USB-C Charging</div>
+                                </div>
+                                
+                                <div class="inventory-actions">
+                                    <button class="btn btn-sm">Notify Me</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="content-section" id="settings-section">
+                <div class="profile-card">
+                    <h2><i class="fas fa-cog"></i> Account Settings</h2>
+                    
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" value="SiphoNkosi" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" value="067 250 5124" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" value="sipho.nkosi@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notifications">Notification Preferences</label>
+                        <select id="notifications">
+                            <option value="all" selected>All notifications</option>
+                            <option value="promo">Only promotional</option>
+                            <option value="none">No notifications</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn"><i class="fas fa-save"></i> Save Changes</button>
+                    
+                    <div class="security-section">
+                        <h3><i class="fas fa-shield-alt"></i> Security</h3>
+                        
+                        <div class="form-group">
+                            <label for="current-password">Current Password</label>
+                            <input type="password" id="current-password">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="new-password">New Password</label>
+                            <input type="password" id="new-password">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm New Password</label>
+                            <input type="password" id="confirm-password">
+                        </div>
+                        
+                        <button class="btn"><i class="fas fa-key"></i> Update Password</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation functionality
+        document.querySelectorAll('.nav-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Hide all content sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show the target section
+                const target = this.getAttribute('data-target');
+                document.getElementById(`${target}-section`).classList.add('active');
+            });
+        });
+        
+        // Simulate user data - in a real app, this would come from your backend
+        const userData = {
+            username: "Sipho Nkosi",
+            phone: "067 250 5124",
+            email: "sipho.nkosi@example.com",
+            joinDate: "Jan 2023",
+            lastLogin: "Today, 14:30",
+            role: "Premium Member",
+            stats: {
+                totalSpins: 12,
+                couponsWon: 5,
+                availableSpins: 2,
+                redemptionRate: "60%"
+            }
+        };
+        
+        // Initialize the page with user data
+        function loadUserData() {
+            document.getElementById('profile-username').textContent = userData.username;
+            document.getElementById('member-since').textContent = userData.joinDate;
+            document.getElementById('last-login').textContent = userData.lastLogin;
+            document.getElementById('profile-role').textContent = userData.role;
+            
+            document.getElementById('total-spins').textContent = userData.stats.totalSpins;
+            document.getElementById('coupons-won').textContent = userData.stats.couponsWon;
+            document.getElementById('available-spins').textContent = userData.stats.availableSpins;
+            document.getElementById('redemption-rate').textContent = userData.stats.redemptionRate;
+            
+            document.getElementById('phone').value = userData.phone;
+            document.getElementById('email').value = userData.email;
+        }
+        
+        // WhatsApp sharing function
+        function shareCoupon(prize, code) {
+            const message = `Hi iCOSTA, I won ${prize}! Code: ${code}`;
+            window.open(`https://wa.me/27672505124?text=${encodeURIComponent(message)}`, '_blank');
+        }
+        
+        // Mark coupon as redeemed
+        function markAsRedeemed(code) {
+            alert(`Coupon ${code} marked as redeemed!`);
+            // In a real app, this would update the database
+        }
+        
+        // Logout function
+        function logout() {
+            if (confirm("Are you sure you want to logout?")) {
+                // In a real app, this would clear authentication tokens
+                window.location.href = "login.html";
+            }
+        }
+        
+        // Admin functions (placeholder)
+        function viewAdminDashboard() {
+            alert("Admin dashboard would open here");
+        }
+        
+        function manageUsers() {
+            alert("User management would open here");
+        }
+        
+        function manageInventory() {
+            alert("Inventory management would open here");
+        }
+        
+        // Initialize the page when loaded
+        window.addEventListener('DOMContentLoaded', (event) => {
+            loadUserData();
+        });
+    </script>
+</body>
+</html>
