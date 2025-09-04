@@ -40,8 +40,6 @@ h1 {
   aspect-ratio: 1/1;
 }
 
-/* Add these styles to your existing CSS */
-
 .wheel-container {
   position: relative;
   width: 100%;
@@ -51,7 +49,7 @@ h1 {
 
 .wheel-pointer {
   position: absolute;
-  top: 125px;
+  top: 0;
   left: 50%;
   transform: translate(-50%, -50%);
   color: limegreen;
@@ -66,14 +64,6 @@ h1 {
 @keyframes point {
   0%, 100% { transform: translate(-50%, -50%) scale(1); }
   50% { transform: translate(-50%, -50%) scale(1.1); }
-}
-
-/* Responsive adjustments */
-@media (max-width: 500px) {
-  .wheel-pointer {
-    font-size: 2rem;
-    transform: translate(-50%, -60%);
-  }
 }
 
 /* Pointer Styles */
@@ -126,7 +116,348 @@ h1 {
   box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
 }
 
-/* Responsive Adjustments */
+/* WhatsApp Float Button */
+.whatsapp-float {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  bottom: 20px;
+  right: 20px;
+  background-color: #25d366;
+  color: #FFF;
+  border-radius: 50px;
+  text-align: center;
+  font-size: 30px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.whatsapp-float:hover {
+  transform: scale(1.05);
+  background-color: #128C7E;
+}
+
+/* FAQ Section */
+.faq-section {
+  margin-top: 30px;
+  padding: 20px;
+  background: #222;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.faq-section h2 {
+  color: limegreen;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.faq-item {
+  margin-bottom: 10px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+}
+
+.faq-question {
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.faq-answer {
+  display: none;
+  padding: 10px;
+  background: #333;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+
+.faq-item.active .faq-answer {
+  display: block;
+}
+
+.faq-item.active .faq-toggle {
+  transform: rotate(45deg);
+}
+
+/* Spinning Animation */
+.spinning {
+  animation: spin 1s infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* User Status Container - Fixed positioning */
+.user-status-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* Ensure other elements don't overlap */
+.container {
+  margin-top: 80px; /* Add space for the fixed user status */
+}
+
+/* View toggle positioning */
+.view-toggle {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Make sure wheel has enough space */
+.wheel-container {
+  margin-top: 20px;
+}
+
+/* Verification Overlay */
+.verification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.verification-container {
+  background: #1e293b;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 500px;
+  overflow: hidden;
+}
+
+.verification-header {
+  background: #32CD32;
+  padding: 20px;
+  text-align: center;
+  color: #000;
+}
+
+.verification-header h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.verification-content {
+  padding: 25px;
+}
+
+.verification-instruction {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.verification-instruction strong {
+  color: #32CD32;
+}
+
+.verification-images {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.verification-image {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 1;
+  transition: all 0.3s ease;
+  border: 2px solid #334155;
+}
+
+.verification-image:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.verification-image.selected {
+  border-color: #32CD32;
+  box-shadow: 0 0 0 2px rgba(50, 205, 50, 0.3);
+}
+
+.verification-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.verification-checkmark {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #32CD32;
+  color: #000;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.verification-image.selected .verification-checkmark {
+  opacity: 1;
+}
+
+.verification-button {
+  background: #32CD32;
+  color: #000;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.verification-button:hover {
+  background: #28a428;
+}
+
+.verification-button:disabled {
+  background: #64748b;
+  cursor: not-allowed;
+}
+
+.verification-error {
+  background: #dc2626;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 15px;
+  display: none;
+}
+
+.verification-success {
+  background: #16a34a;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 15px;
+  display: none;
+}
+
+.verification-footer {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+  padding: 15px;
+  border-top: 1px solid #334155;
+}
+
+@keyframes verification-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+/* Animation improvements */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.spin-button:hover {
+  animation: pulse 1s infinite;
+}
+
+.coupon-card {
+  transition: transform 0.3s ease;
+}
+
+.coupon-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Accessibility improvements */
+.btn:focus,
+.spin-button:focus {
+  outline: 2px solid #32CD32;
+  outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .wheel-container {
+    transform: scale(0.8);
+    margin: -40px 0;
+  }
+  
+  .nav-container {
+    padding: 0 10px;
+  }
+  
+  .nav-links {
+    gap: 15px;
+  }
+  
+  .nav-links a {
+    font-size: 14px;
+  }
+  
+  .coupon-card {
+    width: 90%;
+    padding: 20px;
+  }
+  
+  .admin-container {
+    padding: 10px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  table {
+    font-size: 12px;
+  }
+  
+  .verification-images {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .verification-content {
+    padding: 20px;
+  }
+}
+
 @media (max-width: 500px) {
   .container {
     padding: 20px;
@@ -139,5 +470,103 @@ h1 {
   #wheel::after {
     font-size: 24px;
     transform: translate(-50%, -150px);
+  }
+  
+  .wheel-pointer {
+    font-size: 2rem;
+    transform: translate(-50%, -60%);
+  }
+  
+  .whatsapp-float {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    bottom: 15px;
+    right: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wheel-container {
+    transform: scale(0.7);
+    margin: -60px 0;
+  }
+  
+  .nav-links {
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    right: 0;
+    background: #111;
+    width: 100%;
+    padding: 10px 0;
+    display: none;
+  }
+  
+  .nav-links.active {
+    display: flex;
+  }
+  
+  .menu-toggle {
+    display: block;
+  }
+  
+  .coupon-actions {
+    flex-direction: column;
+  }
+  
+  .coupon-actions .btn {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .wheel-section {
+    background: #000;
+    color: #fff;
+  }
+  
+  .nav-container {
+    background: #000;
+    border-bottom: 2px solid #32CD32;
+  }
+  
+  .btn {
+    border: 2px solid #32CD32;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .wheel-pointer,
+  .spinning {
+    animation: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .whatsapp-float,
+  .verification-overlay,
+  .user-status-container {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .container {
+    box-shadow: none !important;
+    border: 1px solid #ccc;
   }
 }

@@ -1,49 +1,1559 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>iCosta Prize Wheel</title>
-  <link rel="stylesheet" href="styles.css">
-  
-  <!-- Firebase MUST come first -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
-  
-  <!-- Then other scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-  
-  <script>
-    // Firebase config - USE YOUR ACTUAL CONFIG
-    const firebaseConfig = {
-      apiKey: "AIzaSyBAfSH9FgESDvb4QHBEVF9l13zblWdLcg8",
-      authDomain: "icostaplug.firebaseapp.com",
-      databaseURL: "https://icostaplug-default-rtdb.firebaseio.com",
-      projectId: "icostaplug",
-      storageBucket: "icostaplug.appspot.com",
-      messagingSenderId: "911201863766",
-      appId: "1:911201863766:web:7cf34a8f189d47e9cb53f7"
-    };
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iCOSTA - Premium Device Repair & Sales</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-  </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    
+    <!-- Project files -->
+    <script src="firebase-config.js"></script>
+    <script src="error-handler.js"></script>
+    <script src="products.js"></script>
+    
+    <style>
+        :root {
+            --icosta-green: #32CD32;
+            --dark-bg: #111;
+            --card-bg: #1a1a1a;
+            --text-light: #e0e0e0;
+            --gradient-start: #32CD32;
+            --gradient-end: #228B22;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: var(--text-light);
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(50, 205, 50, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(34, 139, 34, 0.1) 0%, transparent 50%);
+        }
+        
+        /* Particle background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            background: var(--icosta-green);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(17, 17, 17, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .header.scrolled {
+            background: rgba(17, 17, 17, 0.98);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo-container {
+            max-width: 150px;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 2px solid var(--icosta-green);
+            box-shadow: 0 0 15px rgba(50, 205, 50, 0.3);
+        }
+        
+        .user-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+        
+        .user-status {
+            background: rgba(34, 34, 34, 0.8);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(51, 51, 51, 0.5);
+        }
+        
+        .user-status:hover {
+            background: rgba(50, 205, 50, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .user-menu {
+            display: none;
+            position: absolute;
+            top: 55px;
+            right: 0;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(51, 51, 51, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-info {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.5);
+        }
+        
+        .user-info div:first-child {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--icosta-green);
+        }
+        
+        .user-info div:last-child {
+            font-size: 13px;
+            color: #999;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, var(--icosta-green), var(--gradient-end));
+            color: black;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(50, 205, 50, 0.4);
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, var(--icosta-green), var(--gradient-end));
+            color: #000;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(50, 205, 50, 0.3);
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(50, 205, 50, 0.4);
+        }
+        
+        /* Navigation */
+        .nav-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: rgba(50, 205, 50, 0.1);
+            color: var(--icosta-green);
+        }
+        
+        /* Main content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 120px 20px 60px;
+            min-height: 100vh;
+        }
+        
+        /* Home section */
+        .home-section {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .hero {
+            margin-bottom: 60px;
+            animation: fadeInUp 1s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--icosta-green), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(50, 205, 50, 0.5);
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, var(--icosta-green), var(--gradient-end));
+            color: black;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 25px rgba(50, 205, 50, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(50, 205, 50, 0.6);
+        }
+        
+        .cta-button:active {
+            transform: translateY(-1px);
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        /* Featured Products */
+        .featured-products {
+            margin: 80px 0;
+            width: 100%;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--icosta-green);
+            font-size: 2.2rem;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .product-card {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(51, 51, 51, 0.3);
+            position: relative;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(50, 205, 50, 0.2);
+            border-color: rgba(50, 205, 50, 0.3);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.3);
+        }
+        
+        .product-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: var(--icosta-green);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .product-details {
+            padding: 20px;
+        }
+        
+        .product-name {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--icosta-green);
+        }
+        
+        .product-description {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .product-price {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--icosta-green);
+            margin-bottom: 15px;
+        }
+        
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-buy {
+            flex: 1;
+            background: var(--icosta-green);
+            color: #000;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-buy:hover {
+            background: #228B22;
+        }
+        
+        .btn-details {
+            background: transparent;
+            color: var(--text-light);
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-details:hover {
+            border-color: var(--icosta-green);
+            color: var(--icosta-green);
+        }
+        
+        /* Features section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 80px;
+        }
+        
+        .feature-card {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(51, 51, 51, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 45px rgba(50, 205, 50, 0.3);
+            border-color: rgba(50, 205, 50, 0.3);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--icosta-green), var(--gradient-end));
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--icosta-green), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 15px;
+            color: var(--icosta-green);
+            font-size: 1.4rem;
+        }
+        
+        .feature-card p {
+            color: #ccc;
+            line-height: 1.6;
+        }
+        
+        /* Wheel section */
+        .wheel-section {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 0 auto 40px;
+            perspective: 1000px;
+        }
+        
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            background: #222;
+            border-radius: 50%;
+            box-shadow: 
+                0 0 0 4px #000,
+                0 0 0 8px var(--icosta-green),
+                0 0 30px rgba(50, 205, 50, 0.5),
+                inset 0 0 20px rgba(0, 0, 0, 0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        #wheelCanvas:hover {
+            transform: scale(1.02);
+        }
+        
+        .wheel-pointer {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--icosta-green);
+            font-size: 3.5rem;
+            text-shadow: 0 0 10px #000;
+            z-index: 100;
+            filter: drop-shadow(0 0 10px rgba(50, 205, 50, 0.7));
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+        
+        .spin-button {
+            background: linear-gradient(135deg, var(--icosta-green), var(--gradient-end));
+            color: black;
+            border: none;
+            padding: 20px 50px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 25px rgba(50, 205, 50, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .spin-button:hover:not(:disabled) {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(50, 205, 50, 0.6);
+        }
+        
+        .spin-button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .spin-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .spin-button:hover:not(:disabled)::before {
+            left: 100%;
+        }
+        
+        .result {
+            margin-top: 30px;
+            font-size: 1.3rem;
+            min-height: 40px;
+            padding: 20px;
+            background: rgba(34, 34, 34, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border-left: 4px solid var(--icosta-green);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        /* FAQ Section */
+        .faq-section {
+            margin-top: 60px;
+            padding: 30px;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            text-align: left;
+            border: 1px solid rgba(51, 51, 51, 0.3);
+        }
+        
+        .faq-section h2 {
+            color: var(--icosta-green);
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2rem;
+        }
+        
+        .faq-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.3);
+            padding-bottom: 20px;
+        }
+        
+        .faq-question {
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(34, 34, 34, 0.5);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-question:hover {
+            background: rgba(50, 205, 50, 0.1);
+        }
+        
+        .faq-answer {
+            display: none;
+            padding: 20px;
+            background: rgba(34, 34, 34, 0.5);
+            border-radius: 10px;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+        
+        .faq-item.active .faq-answer {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .faq-item.active .faq-toggle {
+            transform: rotate(45deg);
+        }
+        
+        /* WhatsApp Float Button */
+        .whatsapp-float {
+            position: fixed;
+            width: 70px;
+            height: 70px;
+            bottom: 25px;
+            right: 25px;
+            background: linear-gradient(135deg, #25d366, #128C7E);
+            color: #FFF;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 35px;
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .whatsapp-float:hover {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.6);
+        }
+        
+        /* Footer */
+        .footer {
+            background: rgba(17, 17, 17, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px 20px;
+            text-align: center;
+            margin-top: 80px;
+            border-top: 1px solid rgba(51, 51, 51, 0.3);
+        }
+        
+        .footer p {
+            margin: 10px 0;
+            color: #999;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-link {
+            color: var(--icosta-green);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1024px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            
+            .wheel-container {
+                width: 400px;
+                height: 400px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 15px;
+            }
+            
+            .logo-container {
+                max-width: 120px;
+            }
+            
+            .user-status {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .wheel-container {
+                width: 320px;
+                height: 320px;
+            }
+            
+            .wheel-pointer {
+                font-size: 2.5rem;
+                top: -20px;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-card {
+                padding: 25px;
+            }
+            
+            .cta-button, .spin-button {
+                padding: 16px 35px;
+                font-size: 1.1rem;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .wheel-container {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .user-menu {
+                width: 250px;
+                right: -10px;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .whatsapp-float {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+        
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .whatsapp-float {
+                animation: none;
+            }
+        }
+        
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .feature-card, .result, .faq-section {
+                border: 2px solid var(--icosta-green);
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🎰 iCosta Plug Wheel</h1>
-    <canvas id="wheel"></canvas>
-    <div class="wheel-pointer">▼</div>
-    <button id="spinButton">SPIN NOW</button>
-    <div id="spin-message">Spin to win amazing iCosta rewards!</div>
-  </div>
-  
-  <!-- Your spin.js MUST come after Firebase init -->
-  <script src="spin.js"></script>
+    <!-- Particle background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Header with user status -->
+    <header class="header" id="mainHeader">
+        <div class="logo-container">
+            <img src="https://icosta.org/wp-content/uploads/2023/05/cropped-icosta-logo-1.png" alt="iCOSTA Logo" class="logo" onerror="handleLogoError(this)">
+        </div>
+        
+        <div class="nav-container">
+            <div class="nav-links">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#products" class="nav-link">Products</a>
+                <a href="#spin" class="nav-link">Spin & Win</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+            
+            <div class="user-controls">
+                <button class="user-status" id="userStatusBtn">
+                    <i class="fas fa-user"></i>
+                    <span id="userStatusText">Not Logged In</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                
+                <!-- Login/Signup Button -->
+                <button id="loginSignupBtn" class="btn-login" style="display: none;">
+                    <i class="fas fa-sign-in-alt"></i> Login/Signup
+                </button>
+                
+                <div class="user-menu" id="userMenu">
+                    <div class="user-info">
+                        <div id="menuUsername">Guest</div>
+                        <div id="menuEmail">Please log in</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn-login" onclick="safeNavigate('profile.html')" style="justify-content: center;">
+                            <i class="fas fa-user"></i> My Profile
+                        </button>
+                        <button class="logout-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Log Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main content -->
+    <main class="main-content">
+        <!-- Home section -->
+        <section class="home-section" id="homeSection">
+            <div class="hero">
+                <h1>Welcome to iCOSTA</h1>
+                <p>South Africa's trusted destination for premium device repairs, certified pre-owned devices, and exclusive deals. Experience the iCOSTA difference today!</p>
+                <button class="cta-button" id="playNowBtn">
+                    <i class="fas fa-play"></i> Spin & Win
+                </button>
+            </div>
+            
+            <!-- Featured Products Section -->
+            <div class="featured-products" id="featuredProducts">
+                <h2 class="section-title">Featured Devices</h2>
+                <div class="products-grid" id="productsGrid">
+                    <!-- Products will be loaded dynamically -->
+                </div>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h3>Expert Repairs</h3>
+                    <p>Our certified technicians provide top-quality repairs for all major device brands with a 6-month warranty on all services.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Quality Guaranteed</h3>
+                    <p>All our devices undergo rigorous testing and come with warranty protection to ensure your complete satisfaction.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h3>Nationwide Delivery</h3>
+                    <p>We deliver across South Africa with secure packaging and tracking. Delivery starts from just R100.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Wheel section -->
+        <section class="wheel-section" id="wheelSection">
+            <h2>Spin to Win Amazing Rewards!</h2>
+            <div class="wheel-container">
+                <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                <div class="wheel-pointer">▼</div>
+            </div>
+            <button id="spinBtn" class="spin-button">
+                <i class="fas fa-sync-alt"></i> SPIN NOW
+            </button>
+            <div id="spin-message" class="result">
+                <i class="fas fa-info-circle"></i> Spin the wheel to win amazing iCOSTA rewards!
+            </div>
+            
+            <!-- FAQ section -->
+            <div class="faq-section">
+                <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+                
+                <div class="faq-item">
+                    <div class="faq-question">How do I claim my prize? <span class="faq-toggle">+</span></div>
+                    <div class="faq-answer">
+                        Simply visit any iCOSTA store with your coupon code. Present the code to our staff, and they'll apply your discount or provide your prize immediately. Prizes must be claimed within 30 days.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Where are iCOSTA stores located? <span class="faq-toggle">+</span></div>
+                    <div class="faq-answer">
+                        We have multiple locations across South Africa. WhatsApp us at <strong>067 250 5124</strong> for the nearest store to you, or visit our website for a complete list of locations.
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">What are your business hours? <span class="faq-toggle">+</span></div>
+                    <div class="faq-answer">
+                        <strong>Monday-Friday:</strong> 8:30 AM - 5:30 PM<br>
+                        <strong>Saturday:</strong> 9:00 AM - 2:00 PM<br>
+                        <strong>Sunday:</strong> Closed<br>
+                        <strong>Public Holidays:</strong> Varies by location
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Can I combine multiple coupons? <span class="faq-toggle">+</span></div>
+                    <div class="faq-answer">
+                        Only one coupon can be used per transaction unless otherwise specified. Some promotions may allow combination with other offers - ask our staff for details!
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">How often can I spin the wheel? <span class="faq-toggle">+</span></div>
+                    <div class="faq-answer">
+                        Free users get 2 spins per day. Registered users may receive additional spins through promotions and special events. Watch our social media for bonus spin opportunities!
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- WhatsApp Float Button -->
+    <a id="whatsappFloat" href="https://wa.me/27672505124?text=Hi%20iCOSTA,%20I%20need%20help%20with%20my%20device" target="_blank" class="whatsapp-float">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2023 iCOSTA. All rights reserved.</p>
+        <p>Spin at your own risk. Terms and conditions apply.</p>
+        
+        <div class="footer-links">
+            <a href="#" class="footer-link">Privacy Policy</a>
+            <a href="#" class="footer-link">Terms of Service</a>
+            <a href="https://wa.me/27672505124" class="footer-link">Contact Us</a>
+            <a href="#" class="footer-link">Store Locator</a>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        // User authentication state
+        let isLoggedIn = false;
+        let currentUser = null;
+        
+        // DOM elements
+        const userStatusBtn = document.getElementById('userStatusBtn');
+        const userStatusText = document.getElementById('userStatusText');
+        const userMenu = document.getElementById('userMenu');
+        const menuUsername = document.getElementById('menuUsername');
+        const menuEmail = document.getElementById('menuEmail');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginSignupBtn = document.getElementById('loginSignupBtn');
+        const playNowBtn = document.getElementById('playNowBtn');
+        const homeSection = document.getElementById('homeSection');
+        const wheelSection = document.getElementById('wheelSection');
+        const spinBtn = document.getElementById('spinBtn');
+        const spinMessage = document.getElementById('spin-message');
+        const whatsappFloat = document.getElementById('whatsappFloat');
+        const productsGrid = document.getElementById('productsGrid');
+        
+        // Handle logo image error
+        function handleLogoError(img) {
+            console.log('Logo failed to load, using fallback');
+            img.onerror = null;
+            img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjYwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iNjAiIGZpbGw9IiMzMkNEWDMyIi8+PHRleHQgeD0iNzUiIHk9IjMwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiMwMDAwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5pQ09TVEE8L3RleHQ+PC9zdmc+';
+        }
+        
+        // Emergency navigation fix
+        function safeNavigate(url) {
+            try {
+                if (url.startsWith('http')) {
+                    window.open(url, '_blank');
+                } else {
+                    window.location.href = url;
+                }
+            } catch (error) {
+                console.error('Navigation failed:', error);
+                // Fallback: create a link and click it
+                try {
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    setTimeout(() => document.body.removeChild(link), 100);
+                } catch (fallbackError) {
+                    console.error('Fallback navigation also failed:', fallbackError);
+                }
+            }
+        }
+        
+        // Create particle background
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            if (!particlesContainer) return;
+            
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random properties
+                const size = Math.random() * 8 + 2;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const delay = Math.random() * 15;
+                const duration = Math.random() * 10 + 15;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.animationDuration = `${duration}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Load featured products
+        function loadFeaturedProducts() {
+            if (!productsGrid) return;
+            
+            try {
+                // Check if products.js is loaded
+                if (typeof getFeaturedProducts !== 'function') {
+                    productsGrid.innerHTML = '<p class="empty-state">Products loading...</p>';
+                    setTimeout(loadFeaturedProducts, 1000);
+                    return;
+                }
+                
+                const featuredProducts = getFeaturedProducts();
+                
+                if (!featuredProducts || featuredProducts.length === 0) {
+                    productsGrid.innerHTML = '<p class="empty-state">No featured products available at the moment.</p>';
+                    return;
+                }
+                
+                productsGrid.innerHTML = '';
+                
+                featuredProducts.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    
+                    productCard.innerHTML = `
+              <img src="${getProductImage(product)}" alt="${product.name}" class="product-image" 
+     onerror="this.src='${product.fallbackImage}'">
+                        <div class="product-badge">${product.condition}</div>
+                        <div class="product-details">
+                            <h3 class="product-name">${product.name}</h3>
+                            <p class="product-description">${product.description}</p>
+                            <div class="product-meta">
+                                <span>${product.storage}</span>
+                                <span>${product.battery} Health</span>
+                            </div>
+                            <div class="product-price">R${product.price.toLocaleString()}</div>
+                            <div class="product-actions">
+                                <button class="btn-buy" onclick="buyProduct('${product.id}')">Buy Now</button>
+                                <button class="btn-details" onclick="viewProduct('${product.id}')">Details</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    productsGrid.appendChild(productCard);
+                });
+            } catch (error) {
+                console.error('Error loading products:', error);
+                productsGrid.innerHTML = '<p class="empty-state">Error loading products. Please refresh the page.</p>';
+            }
+        }
+        
+        // Buy product function
+        function buyProduct(productId) {
+            try {
+                if (typeof getProductById !== 'function') {
+                    alert('Products not loaded yet. Please try again.');
+                    return;
+                }
+                
+                const product = getProductById(productId);
+                if (!product) {
+                    alert('Product not found!');
+                    return;
+                }
+                
+                const message = `Hi iCOSTA, I want to buy the ${product.name} for R${product.price}.`;
+                window.open(`https://wa.me/27672505124?text=${encodeURIComponent(message)}`, '_blank');
+            } catch (error) {
+                console.error('Error in buyProduct:', error);
+                alert('Error processing your request. Please try again.');
+            }
+        }
+        
+        // View product details
+        function viewProduct(productId) {
+            try {
+                if (typeof getProductById !== 'function') {
+                    alert('Products not loaded yet. Please try again.');
+                    return;
+                }
+                
+                const product = getProductById(productId);
+                if (product) {
+                    alert(`${product.name}\n${product.description}\nPrice: R${product.price}\nStorage: ${product.storage}\nBattery: ${product.battery}\nCondition: ${product.condition}\nWarranty: ${product.warranty}`);
+                }
+            } catch (error) {
+                console.error('Error in viewProduct:', error);
+                alert('Error loading product details.');
+            }
+        }
+        
+        // Initialize the application
+        function initializeApp() {
+            createParticles();
+            checkAuthStatus();
+            setupEventListeners();
+            initFAQ();
+            setupScrollHandler();
+            
+            // Load products after a short delay to ensure products.js is loaded
+            setTimeout(loadFeaturedProducts, 500);
+            
+            // Initialize wheel if hash is present
+            if (window.location.hash === '#wheel') {
+                showWheelSection();
+            }
+        }
+        
+        // Start initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+        
+        // Scroll handler for header effect
+        function setupScrollHandler() {
+            const header = document.getElementById('mainHeader');
+            if (!header) return;
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+        }
+        
+        // Check if user is authenticated
+        function checkAuthStatus() {
+            try {
+                const userData = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                
+                if (userData) {
+                    currentUser = userData;
+                    isLoggedIn = true;
+                    updateUIForLoggedInUser();
+                    
+                    // Check if we should show wheel section (if coming from login)
+                    if (window.location.hash === '#wheel') {
+                        showWheelSection();
+                    }
+                } else {
+                    updateUIForLoggedOutUser();
+                }
+            } catch (error) {
+                console.error('Error checking auth status:', error);
+                updateUIForLoggedOutUser();
+            }
+        }
+        
+        // Update UI for logged in user
+        function updateUIForLoggedInUser() {
+            if (userStatusText) {
+                userStatusText.textContent = currentUser.username || currentUser.phone || 'User';
+            }
+            if (menuUsername) {
+                menuUsername.textContent = currentUser.username || currentUser.phone || 'User';
+            }
+            if (menuEmail) {
+                menuEmail.textContent = currentUser.role ? `${currentUser.role} account` : 'User account';
+            }
+            
+            // Hide login button when logged in
+            if (loginSignupBtn) loginSignupBtn.style.display = 'none';
+        }
+        
+        // Update UI for logged out user
+        function updateUIForLoggedOutUser() {
+            if (userStatusText) userStatusText.textContent = 'Not Logged In';
+            if (menuUsername) menuUsername.textContent = 'Guest';
+            if (menuEmail) menuEmail.textContent = 'Please log in';
+            
+            // Show login button when logged out
+            if (loginSignupBtn) {
+                loginSignupBtn.style.display = 'flex';
+                loginSignupBtn.style.visibility = 'visible';
+            }
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Toggle user menu
+            if (userStatusBtn) {
+                userStatusBtn.addEventListener('click', function() {
+                    if (userMenu) {
+                        userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+                    }
+                });
+            }
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (userStatusBtn && !userStatusBtn.contains(e.target) && userMenu && !userMenu.contains(e.target)) {
+                    userMenu.style.display = 'none';
+                }
+            });
+            
+            // Login button functionality
+            if (loginSignupBtn) {
+                loginSignupBtn.addEventListener('click', function() {
+                    safeNavigate('login.html');
+                });
+            }
+            
+            // Logout functionality
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+            }
+            
+            // Play now button - navigate to wheel
+            if (playNowBtn) {
+                playNowBtn.addEventListener('click', function() {
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                    
+                    if (currentUser) {
+                        showWheelSection();
+                    } else {
+                        alert('Please log in to play!');
+                        safeNavigate('login.html');
+                    }
+                });
+            }
+            
+            // Navigation links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.getAttribute('href');
+                    
+                    if (target === '#spin') {
+                        const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                        if (currentUser) {
+                            showWheelSection();
+                        } else {
+                            alert('Please log in to access the Spin & Win feature!');
+                            safeNavigate('login.html');
+                        }
+                    } else if (target === '#products') {
+                        const featuredProducts = document.getElementById('featuredProducts');
+                        if (featuredProducts) {
+                            featuredProducts.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                    // Other navigation targets can be added here
+                });
+            });
+        }
+        
+        // Initialize FAQ functionality
+        function initFAQ() {
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                
+                if (question) {
+                    question.addEventListener('click', () => {
+                        item.classList.toggle('active');
+                    });
+                }
+            });
+        }
+        
+        // Draw wheel placeholder
+        function drawWheelPlaceholder() {
+            const canvas = document.getElementById('wheelCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 10;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw wheel background
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#111';
+            ctx.fill();
+            ctx.strokeStyle = '#32CD32';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+            
+            // Draw wheel segments with proper colors
+            const prizes = [
+                { label: 'R50 OFF', color: '#32CD32' },
+                { label: 'Screen', color: '#111' },
+                { label: '10% OFF', color: '#228B22' },
+                { label: 'Trade-in', color: '#333' },
+                { label: 'Wildcard', color: '#3CB371' }
+            ];
+            
+            const segmentAngle = (2 * Math.PI) / prizes.length;
+            
+            prizes.forEach((prize, index) => {
+                // Draw segment
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, index * segmentAngle, (index + 1) * segmentAngle);
+                ctx.closePath();
+                ctx.fillStyle = prize.color;
+                ctx.fill();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw text
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(index * segmentAngle + segmentAngle / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = index % 2 === 0 ? '#fff' : '#000';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(prize.label, radius - 20, 10);
+                ctx.restore();
+            });
+            
+            // Draw center
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = '#32CD32';
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw center text
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('SPIN', centerX, centerY);
+        }
+        
+        // Initialize wheel
+        function initWheel() {
+            // Draw initial wheel
+            drawWheelPlaceholder();
+            
+            // Set up the spin button
+            if (spinBtn) {
+                spinBtn.addEventListener('click', function() {
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                    
+                    if (currentUser) {
+                        // Check if spinWheel function is available
+                        if (typeof spinWheel === 'function') {
+                            spinWheel();
+                        } else {
+                            console.error('spinWheel function not found');
+                            // Fallback to direct spinning
+                            simulateSpin();
+                        }
+                    } else {
+                        alert('Please log in to play!');
+                        safeNavigate('login.html');
+                    }
+                });
+            }
+        }
+        
+        // Show wheel section
+        function showWheelSection() {
+            if (homeSection && wheelSection) {
+                homeSection.style.display = 'none';
+                wheelSection.style.display = 'block';
+                window.location.hash = '#wheel';
+                initWheel();
+            }
+        }
+        
+        // Simulate spin (fallback if spin.js not loaded)
+        function simulateSpin() {
+            if (!spinBtn || !spinMessage) return;
+            
+            spinBtn.disabled = true;
+            spinMessage.innerHTML = "<div class='spinning'>🔄 SPINNING...</div>";
+            
+            // Simulate spinning animation
+            const startTime = Date.now();
+            const duration = 3000;
+            const prizes = ["R50 OFF", "Screen Protector", "10% OFF", "Trade-in", "Wildcard"];
+            const winningIndex = Math.floor(Math.random() * prizes.length);
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Finish spin
+                    spinMessage.innerHTML = `
+                        <strong>🎉 ${prizes[winningIndex]}</strong><br>
+                        Congratulations! You won a prize!<br>
+                        <small>Code: ICOSTA-${Math.random().toString(36).substr(2, 6).toUpperCase()}</small>
+                    `;
+                    
+                    // Enable spin button after a delay
+                    setTimeout(() => {
+                        spinBtn.disabled = false;
+                    }, 3000);
+                    
+                    // Confetti celebration
+                    if (typeof confetti === 'function') {
+                        confetti({
+                            particleCount: 200,
+                            spread: 70,
+                            origin: { y: 0.6 },
+                            colors: ['#32CD32', '#ffffff', '#000000']
+                        });
+                    }
+                }
+            }
+            
+            animate();
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('currentUser');
+            isLoggedIn = false;
+            currentUser = null;
+            updateUIForLoggedOutUser();
+            if (userMenu) userMenu.style.display = 'none';
+            
+            // Show home section and hide wheel when logging out
+            if (homeSection && wheelSection) {
+                homeSection.style.display = 'block';
+                wheelSection.style.display = 'none';
+                window.location.hash = '';
+            }
+            
+            alert('Logged out successfully');
+        }
+    </script>
+    
+    <!-- Load spin functionality -->
+    <script src="spin.js"></script>
 </body>
 </html>
-
-
-
-
-
