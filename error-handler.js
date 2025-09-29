@@ -3,7 +3,7 @@ class ErrorHandler {
     constructor() {
         this.initialized = false;
         this.errorCount = 0;
-        this.maxErrorsBeforeReload = 50; // Increased from 10 to 50
+        this.maxErrorsBeforeReload = 50;
         this.offlineMode = false;
         this.pendingErrors = [];
         this.firebaseAvailable = false;
@@ -140,6 +140,15 @@ class ErrorHandler {
                 error: event.detail?.error,
                 type: 'firebase_error',
                 severity: this.offlineMode ? 'warning' : 'error'
+            });
+        });
+
+        window.addEventListener('apiError', (event) => {
+            this.handleError({
+                message: event.detail?.message || 'API error',
+                error: event.detail?.error,
+                type: 'api_error',
+                severity: 'error'
             });
         });
     }
@@ -347,7 +356,12 @@ class ErrorHandler {
             'unavailable': 'Service is temporarily unavailable. Please try again later.',
             'auth/wrong-password': 'Incorrect password. Please try again.',
             'auth/user-not-found': 'No account found with this phone number.',
-            'auth/too-many-requests': 'Too many attempts. Please try again later.'
+            'auth/too-many-requests': 'Too many attempts. Please try again later.',
+            'auth/invalid-verification-code': 'Invalid verification code. Please try again.',
+            'auth/invalid-phone-number': 'Invalid phone number format.',
+            'auth/phone-number-already-exists': 'Phone number is already registered.',
+            'auth/operation-not-allowed': 'Phone authentication is not enabled.',
+            'auth/quota-exceeded': 'SMS quota exceeded. Please try again later.'
         };
         
         for (const [key, value] of Object.entries(messages)) {
