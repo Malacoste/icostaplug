@@ -208,6 +208,46 @@
             margin-top: 5px;
         }
         
+        /* Verification Code Section */
+        .verification-section {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #222;
+            border-radius: 8px;
+            border-left: 4px solid var(--icosta-green);
+        }
+        
+        .verification-inputs {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .verification-inputs input {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            flex: 1;
+        }
+        
+        .resend-code {
+            color: var(--icosta-green);
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .resend-code:hover {
+            text-decoration: underline;
+        }
+        
+        /* Recaptcha Container */
+        #recaptcha-container {
+            margin: 15px 0;
+        }
+        
         @media (max-width: 480px) {
             .login-container {
                 padding: 20px;
@@ -215,6 +255,14 @@
             
             body {
                 padding: 10px;
+            }
+            
+            .verification-inputs {
+                gap: 5px;
+            }
+            
+            .verification-inputs input {
+                font-size: 18px;
             }
         }
     </style>
@@ -231,7 +279,7 @@
 
     <div class="login-container">
         <div class="logo-container">
-            <img src="https://icosta.org/wp-content/uploads/2023/05/cropped-icosta-logo-1.png" class="logo" alt="iCOSTA Logo" onerror="handleLoginLogoError(this)">
+            <img src="https://i.imgur.com/Rs7AkMV.png" class="logo" alt="iCOSTA Logo" onerror="handleLoginLogoError(this)">
         </div>
         
         <h1 id="form-title">WELCOME TO iCOSTA</h1>
@@ -257,10 +305,36 @@
                 <input type="password" id="confirm-password" placeholder="Confirm your password">
             </div>
             
+            <!-- Recaptcha Container -->
+            <div id="recaptcha-container"></div>
+            
             <div id="message" class="message"></div>
             
             <button type="submit" class="btn-login" id="submit-btn">CONTINUE</button>
         </form>
+        
+        <!-- Verification Code Section -->
+        <div id="verification-section" class="verification-section">
+            <h3>Enter Verification Code</h3>
+            <p>We've sent a 6-digit code to your phone</p>
+            
+            <div class="verification-inputs">
+                <input type="text" id="verification-digit-1" maxlength="1" oninput="moveToNext(1)" pattern="[0-9]">
+                <input type="text" id="verification-digit-2" maxlength="1" oninput="moveToNext(2)" pattern="[0-9]">
+                <input type="text" id="verification-digit-3" maxlength="1" oninput="moveToNext(3)" pattern="[0-9]">
+                <input type="text" id="verification-digit-4" maxlength="1" oninput="moveToNext(4)" pattern="[0-9]">
+                <input type="text" id="verification-digit-5" maxlength="1" oninput="moveToNext(5)" pattern="[0-9]">
+                <input type="text" id="verification-digit-6" maxlength="1" oninput="moveToNext(6)" pattern="[0-9]">
+            </div>
+            
+            <div class="resend-code" id="resend-code" onclick="resendVerificationCode()">
+                Didn't receive the code? Resend
+            </div>
+            
+            <button class="btn-login" id="verify-btn" onclick="verifyCode()" style="margin-top: 15px;">
+                Verify Code
+            </button>
+        </div>
         
         <div class="form-toggle">
             <span id="toggle-form-text">Create an account</span>
@@ -281,7 +355,7 @@
         function handleLoginLogoError(img) {
             console.log('Login logo failed to load, using fallback');
             img.onerror = null;
-            img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzMyQ0QzMiIvPjx0ZXh0IHg9IjEwMCIgeT0iNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzAwMDAwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPmlDT1NUQTwvdGV4dD48L3N2Zz4=';
+            img.src = 'https://i.imgur.com/Rs7AkMV.png';
         }
 
         // Security configuration
@@ -294,6 +368,10 @@
         // Initialize variables
         let isSignupMode = false;
         let loginAttempts = 0;
+        let confirmationResult = null;
+        let recaptchaVerifier = null;
+        let resendTimer = null;
+        let resendTimeLeft = 60;
         const MAX_LOGIN_ATTEMPTS = 5;
         const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
         
@@ -306,6 +384,9 @@
         const submitBtn = document.getElementById('submit-btn');
         const messageDiv = document.getElementById('message');
         const passwordStrength = document.getElementById('password-strength');
+        const verificationSection = document.getElementById('verification-section');
+        const resendCode = document.getElementById('resend-code');
+        const recaptchaContainer = document.getElementById('recaptcha-container');
         
         // Set up language selector
         document.getElementById('language').addEventListener('change', function() {
@@ -334,6 +415,7 @@
             authForm.reset();
             hideMessage();
             passwordStrength.className = 'password-strength';
+            verificationSection.style.display = 'none';
         });
         
         // Format phone number as user types
@@ -394,6 +476,30 @@
             return true;
         }
         
+        // Setup Recaptcha
+        function setupRecaptcha() {
+            try {
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                        'size': 'normal',
+                        'callback': function(response) {
+                            console.log('Recaptcha verified');
+                        },
+                        'expired-callback': function() {
+                            console.log('Recaptcha expired');
+                        }
+                    });
+                    
+                    recaptchaVerifier.render().then(function(widgetId) {
+                        window.recaptchaWidgetId = widgetId;
+                    });
+                }
+            } catch (error) {
+                console.error('Recaptcha setup failed:', error);
+                showMessage('Security verification failed. Please refresh the page.', 'error');
+            }
+        }
+        
         // Form submission
         authForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -417,6 +523,11 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = isSignupMode ? 'CREATING ACCOUNT...' : 'LOGGING IN...';
                 
+                // Setup recaptcha if not already done
+                if (!recaptchaVerifier) {
+                    setupRecaptcha();
+                }
+                
                 if (isSignupMode) {
                     await signUp(phone, password);
                 } else {
@@ -430,6 +541,157 @@
                 submitBtn.textContent = isSignupMode ? 'SIGN UP' : 'LOGIN';
             }
         });
+        
+        // Send verification code
+        async function sendVerificationCode(phoneNumber) {
+            try {
+                if (!recaptchaVerifier) {
+                    setupRecaptcha();
+                }
+                
+                const formattedPhone = '+27' + phoneNumber.substring(1);
+                confirmationResult = await firebase.auth().signInWithPhoneNumber(formattedPhone, recaptchaVerifier);
+                
+                // Show verification section
+                verificationSection.style.display = 'block';
+                authForm.style.display = 'none';
+                
+                // Start resend timer
+                startResendTimer();
+                
+                showMessage('Verification code sent to your phone', 'success');
+                
+            } catch (error) {
+                console.error('SMS not sent:', error);
+                if (error.code === 'auth/invalid-phone-number') {
+                    showMessage('Invalid phone number format', 'error');
+                } else if (error.code === 'auth/too-many-requests') {
+                    showMessage('Too many attempts. Please try again later.', 'error');
+                } else {
+                    showMessage('Failed to send verification code', 'error');
+                }
+                
+                // Reset recaptcha
+                if (window.recaptchaWidgetId) {
+                    recaptchaVerifier.reset(window.recaptchaWidgetId);
+                }
+            }
+        }
+        
+        // Verify code
+        async function verifyCode() {
+            try {
+                const code = getVerificationCode();
+                if (code.length !== 6) {
+                    showMessage('Please enter a valid 6-digit code', 'error');
+                    return;
+                }
+                
+                const verifyBtn = document.getElementById('verify-btn');
+                verifyBtn.disabled = true;
+                verifyBtn.textContent = 'VERIFYING...';
+                
+                const credential = await confirmationResult.confirm(code);
+                
+                // User signed in successfully
+                const user = credential.user;
+                
+                // Save user data
+                await saveUserAfterVerification(user.phoneNumber);
+                
+                showMessage('Verification successful!', 'success');
+                
+                // Redirect to main page
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Invalid code:', error);
+                showMessage('Invalid verification code', 'error');
+                
+                const verifyBtn = document.getElementById('verify-btn');
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify Code';
+            }
+        }
+        
+        // Get verification code from inputs
+        function getVerificationCode() {
+            let code = '';
+            for (let i = 1; i <= 6; i++) {
+                code += document.getElementById('verification-digit-' + i).value;
+            }
+            return code;
+        }
+        
+        // Move to next input field
+        function moveToNext(current) {
+            const currentInput = document.getElementById('verification-digit-' + current);
+            if (currentInput.value.length === 1 && current < 6) {
+                document.getElementById('verification-digit-' + (current + 1)).focus();
+            }
+        }
+        
+        // Resend verification code
+        async function resendVerificationCode() {
+            if (resendTimer) return;
+            
+            try {
+                const phone = document.getElementById('phone').value.replace(/\s/g, '');
+                await sendVerificationCode(phone);
+                showMessage('Verification code resent', 'success');
+            } catch (error) {
+                console.error('Resend failed:', error);
+                showMessage('Failed to resend code', 'error');
+            }
+        }
+        
+        // Start resend timer
+        function startResendTimer() {
+            resendTimeLeft = 60;
+            resendCode.style.color = '#999';
+            resendCode.style.cursor = 'default';
+            resendCode.onclick = null;
+            
+            updateResendTimer();
+            
+            resendTimer = setInterval(() => {
+                resendTimeLeft--;
+                updateResendTimer();
+                
+                if (resendTimeLeft <= 0) {
+                    clearInterval(resendTimer);
+                    resendTimer = null;
+                    resendCode.style.color = 'var(--icosta-green)';
+                    resendCode.style.cursor = 'pointer';
+                    resendCode.onclick = resendVerificationCode;
+                    resendCode.textContent = 'Resend verification code';
+                }
+            }, 1000);
+        }
+        
+        // Update resend timer display
+        function updateResendTimer() {
+            resendCode.textContent = `Resend code in ${resendTimeLeft}s`;
+        }
+        
+        // Save user after verification
+        async function saveUserAfterVerification(phoneNumber) {
+            try {
+                const phone = phoneNumber.replace('+27', '0');
+                const password = document.getElementById('password').value;
+                
+                if (isSignupMode) {
+                    await signUp(phone, password);
+                } else {
+                    await login(phone, password);
+                }
+            } catch (error) {
+                console.error('Error saving user after verification:', error);
+                throw error;
+            }
+        }
         
         // Secure password hashing
         async function hashPassword(password) {
@@ -461,6 +723,18 @@
         
         // Sign up function
         async function signUp(phone, password) {
+            // First send verification code
+            await sendVerificationCode(phone);
+        }
+        
+        // Login function
+        async function login(phone, password) {
+            // First send verification code
+            await sendVerificationCode(phone);
+        }
+        
+        // Complete sign up after verification
+        async function completeSignUp(phone, password) {
             // Check if user already exists
             const users = JSON.parse(localStorage.getItem('users') || '{}');
             
@@ -507,23 +781,15 @@
             } catch (firebaseError) {
                 console.warn('Firebase logging failed:', firebaseError);
             }
-            
-            showMessage('Account created successfully!', 'success');
-            
-            // Redirect to wheel after delay
-            setTimeout(() => {
-                window.location.href = 'index.html#wheel';
-            }, 1500);
         }
         
-        // Login function
-        async function login(phone, password) {
+        // Complete login after verification
+        async function completeLogin(phone, password) {
             // Check if user exists
             const users = JSON.parse(localStorage.getItem('users') || '{}');
             const user = users[phone];
             
             if (!user) {
-                incrementFailedAttempts(phone);
                 throw new Error('No account found with this phone number');
             }
             
@@ -537,7 +803,6 @@
             const isValid = await verifyPassword(password, user.salt, user.password);
             
             if (!isValid) {
-                incrementFailedAttempts(phone);
                 throw new Error('Incorrect password');
             }
             
@@ -571,13 +836,6 @@
             } catch (firebaseError) {
                 console.warn('Firebase logging failed:', firebaseError);
             }
-            
-            showMessage('Login successful!', 'success');
-            
-            // Redirect to wheel after delay
-            setTimeout(() => {
-                window.location.href = 'index.html#wheel';
-            }, 1000);
         }
         
         // Increment failed login attempts
@@ -764,6 +1022,9 @@
                 localStorage.removeItem('loginLockout');
                 loginAttempts = 0;
             }
+            
+            // Setup recaptcha
+            setupRecaptcha();
             
             // Set initial language
             setLanguage('en');
