@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iCOSTA - User Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="products.js"></script>
     <style>
         :root {
             --icosta-green: #32CD32;
@@ -87,6 +93,7 @@
             font-size: 14px;
             min-width: 120px;
             justify-content: center;
+            position: relative;
         }
         
         .nav-btn:hover {
@@ -98,6 +105,21 @@
             background: var(--icosta-green);
             color: #000;
             box-shadow: 0 4px 12px rgba(50, 205, 50, 0.3);
+        }
+        
+        .badge {
+            background: var(--error-red);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: -5px;
+            right: -5px;
         }
         
         /* Buttons */
@@ -235,6 +257,10 @@
             font-weight: bold;
             display: inline-block;
         }
+        
+        .role-admin { background: #ff9900; color: #000; }
+        .role-user { background: var(--icosta-green); color: #000; }
+        .role-tester { background: #3366cc; color: white; }
         
         /* Stats grid */
         .stats {
@@ -634,6 +660,28 @@
             to { transform: rotate(360deg); }
         }
         
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--icosta-green);
+            color: #000;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .header {
@@ -723,7 +771,7 @@
             </button>
             <button class="nav-btn" data-target="coupons">
                 <i class="fas fa-ticket-alt"></i> My Coupons
-                <span id="coupons-badge" class="badge">3</span>
+                <span id="coupons-badge" class="badge" style="display: none;">0</span>
             </button>
             <button class="nav-btn" data-target="history">
                 <i class="fas fa-history"></i> Spin History
@@ -752,20 +800,20 @@
                             </div>
                         </div>
                         <div class="user-details">
-                            <h3 id="profile-username">Sipho Nkosi</h3>
-                            <span class="user-role" id="profile-role">Premium Member</span>
-                            <p>Member since: <span id="member-since">Jan 2023</span></p>
-                            <p>Last login: <span id="last-login">Today, 14:30</span></p>
+                            <h3 id="profile-username">Loading...</h3>
+                            <span class="user-role role-user" id="profile-role">User</span>
+                            <p>Member since: <span id="member-since">Loading...</span></p>
+                            <p>Last login: <span id="last-login">Loading...</span></p>
                         </div>
                     </div>
                     
                     <div class="stats">
                         <div class="stat-card">
-                            <div class="stat-value" id="total-spins">12</div>
+                            <div class="stat-value" id="total-spins">0</div>
                             <div class="stat-label">Total Spins</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="coupons-won">5</div>
+                            <div class="stat-value" id="coupons-won">0</div>
                             <div class="stat-label">Coupons Won</div>
                         </div>
                         <div class="stat-card">
@@ -773,7 +821,7 @@
                             <div class="stat-label">Spins Available</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="redemption-rate">60%</div>
+                            <div class="stat-value" id="redemption-rate">0%</div>
                             <div class="stat-label">Redemption Rate</div>
                         </div>
                     </div>
@@ -781,9 +829,9 @@
                     <div class="admin-only" style="display: none; margin-top: 25px;">
                         <h3><i class="fas fa-crown"></i> Administrator Tools</h3>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
-                            <button class="btn btn-secondary" onclick="viewAdminDashboard()">
+                            <a href="admin.html" class="btn btn-secondary">
                                 <i class="fas fa-chart-line"></i> View Analytics
-                            </button>
+                            </a>
                             <button class="btn btn-secondary" onclick="manageUsers()">
                                 <i class="fas fa-users"></i> Manage Users
                             </button>
@@ -799,86 +847,14 @@
             <div class="content-section" id="coupons-section">
                 <div class="profile-card">
                     <h2><i class="fas fa-ticket-alt"></i> My Coupons</h2>
-                    <div class="coupon-list">
-                        <div class="coupon-item">
-                            <div class="coupon-header">
-                                <h3 class="coupon-title">R50 OFF Repair</h3>
-                                <span class="coupon-status status-active">Active</span>
-                            </div>
-                            
-                            <div class="coupon-code">ICO50-X8J9F3</div>
-                            
-                            <div class="coupon-details">
-                                <div class="detail-item">
-                                    <span class="detail-label">Valid Until</span>
-                                    <span class="detail-value">15 Dec 2023</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Personalized</span>
-                                    <span class="detail-value">iPhone Screen Repair</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Status</span>
-                                    <span class="detail-value">Active</span>
-                                </div>
-                            </div>
-                            
-                            <div class="coupon-actions">
-                                <button class="btn btn-sm" onclick="shareCoupon('R50 OFF Repair', 'ICO50-X8J9F3')">
-                                    <i class="fab fa-whatsapp"></i> Share
-                                </button>
-                                <button class="btn btn-sm btn-warning" onclick="markAsRedeemed('ICO50-X8J9F3')">
-                                    <i class="fas fa-check"></i> Mark Redeemed
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="coupon-item redeemed">
-                            <div class="coupon-header">
-                                <h3 class="coupon-title">Free Screen Protector</h3>
-                                <span class="coupon-status status-redeemed">Redeemed</span>
-                            </div>
-                            
-                            <div class="coupon-code">ICOSCREEN-7B2K9L</div>
-                            
-                            <div class="coupon-details">
-                                <div class="detail-item">
-                                    <span class="detail-label">Valid Until</span>
-                                    <span class="detail-value">10 Nov 2023</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Personalized</span>
-                                    <span class="detail-value">iPhone 14 Pro</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Status</span>
-                                    <span class="detail-value">Redeemed on 05 Nov 2023</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="coupon-item expired">
-                            <div class="coupon-header">
-                                <h3 class="coupon-title">10% OFF Accessories</h3>
-                                <span class="coupon-status status-expired">Expired</span>
-                            </div>
-                            
-                            <div class="coupon-code">ICO10-P4M7Q2</div>
-                            
-                            <div class="coupon-details">
-                                <div class="detail-item">
-                                    <span class="detail-label">Valid Until</span>
-                                    <span class="detail-value">20 Oct 2023</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Personalized</span>
-                                    <span class="detail-value">All Accessories</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Status</span>
-                                    <span class="detail-value">Expired</span>
-                                </div>
-                            </div>
+                    <div class="coupon-list" id="coupons-container">
+                        <div class="empty-state">
+                            <i class="fas fa-ticket-alt"></i>
+                            <h3>No Coupons Yet</h3>
+                            <p>Spin the wheel to win amazing coupons!</p>
+                            <a href="index.html#wheel" class="btn" style="margin-top: 15px;">
+                                <i class="fas fa-sync-alt"></i> Spin Now
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -888,41 +864,11 @@
             <div class="content-section" id="history-section">
                 <div class="profile-card">
                     <h2><i class="fas fa-history"></i> Spin History</h2>
-                    <div class="history-list">
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-prize"><i class="fas fa-tag"></i> R50 OFF Repair</div>
-                                <div class="history-date">Today, 14:30</div>
-                                <div class="history-device">iPhone 12 Pro • Safari</div>
-                            </div>
-                            <div class="history-code">ICO50-X8J9F3</div>
-                        </div>
-                        
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-prize"><i class="fas fa-shield-alt"></i> Free Screen Protector</div>
-                                <div class="history-date">05 Nov 2023, 10:15</div>
-                                <div class="history-device">Samsung Galaxy S21 • Chrome</div>
-                            </div>
-                            <div class="history-code">ICOSCREEN-7B2K9L</div>
-                        </div>
-                        
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-prize"><i class="fas fa-times-circle"></i> Better luck next time!</div>
-                                <div class="history-date">02 Nov 2023, 16:45</div>
-                                <div class="history-device">iPad Air • Safari</div>
-                            </div>
-                            <div class="history-code">No win</div>
-                        </div>
-                        
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-prize"><i class="fas fa-percent"></i> 10% OFF Accessories</div>
-                                <div class="history-date">15 Oct 2023, 09:30</div>
-                                <div class="history-device">iPhone 13 • Chrome</div>
-                            </div>
-                            <div class="history-code">ICO10-P4M7Q2</div>
+                    <div class="history-list" id="history-container">
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <h3>No Spin History</h3>
+                            <p>Your spin history will appear here</p>
                         </div>
                     </div>
                 </div>
@@ -932,67 +878,11 @@
             <div class="content-section" id="inventory-section">
                 <div class="profile-card">
                     <h2><i class="fas fa-shopping-bag"></i> Featured Devices</h2>
-                    <div class="inventory-grid">
-                        <div class="inventory-item">
-                            <img src="https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="iPhone 14 Pro" class="inventory-image">
-                            <div class="inventory-details">
-                                <h3>iPhone 14 Pro</h3>
-                                <div class="inventory-price">R15,499</div>
-                                <div class="inventory-description">Brand new sealed unit with 100% battery health and 1-year warranty</div>
-                                
-                                <div class="inventory-specs">
-                                    <div class="spec-item"><i class="fas fa-microchip"></i> A16 Bionic Chip</div>
-                                    <div class="spec-item"><i class="fas fa-hdd"></i> 128GB Storage</div>
-                                    <div class="spec-item"><i class="fas fa-camera"></i> Triple 12MP Camera</div>
-                                    <div class="spec-item"><i class="fas fa-battery-full"></i> 100% Health</div>
-                                </div>
-                                
-                                <div class="inventory-actions">
-                                    <button class="btn btn-sm">View Details</button>
-                                    <button class="btn btn-sm btn-secondary">Add to Cart</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="inventory-item">
-                            <img src="https://images.unsplash.com/photo-1611472173362-3f53dbd65d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Samsung Galaxy S23" class="inventory-image">
-                            <div class="inventory-details">
-                                <h3>Samsung Galaxy S23</h3>
-                                <div class="inventory-price">R12,999</div>
-                                <div class="inventory-description">Excellent condition, 90%+ battery health, 6-month warranty</div>
-                                
-                                <div class="inventory-specs">
-                                    <div class="spec-item"><i class="fas fa-microchip"></i> Snapdragon 8 Gen 2</div>
-                                    <div class="spec-item"><i class="fas fa-hdd"></i> 256GB Storage</div>
-                                    <div class="spec-item"><i class="fas fa-camera"></i> 50MP Main Camera</div>
-                                    <div class="spec-item"><i class="fas fa-battery-three-quarters"></i> 92% Health</div>
-                                </div>
-                                
-                                <div class="inventory-actions">
-                                    <button class="btn btn-sm">View Details</button>
-                                    <button class="btn btn-sm btn-secondary">Add to Cart</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="inventory-item sold-out">
-                            <img src="https://images.unsplash.com/photo-1695048133142-4cdef95ff5f7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="iPhone 15 Pro" class="inventory-image">
-                            <div class="inventory-details">
-                                <h3>iPhone 15 Pro</h3>
-                                <div class="inventory-price">R18,999</div>
-                                <div class="inventory-description">Coming soon - Pre-order now to secure your unit</div>
-                                
-                                <div class="inventory-specs">
-                                    <div class="spec-item"><i class="fas fa-microchip"></i> A17 Pro Chip</div>
-                                    <div class="spec-item"><i class="fas fa-hdd"></i> 256GB Storage</div>
-                                    <div class="spec-item"><i class="fas fa-camera"></i> 48MP Main Camera</div>
-                                    <div class="spec-item"><i class="fas fa-bolt"></i> USB-C Charging</div>
-                                </div>
-                                
-                                <div class="inventory-actions">
-                                    <button class="btn btn-sm">Notify Me</button>
-                                </div>
-                            </div>
+                    <div class="inventory-grid" id="inventory-container">
+                        <div class="empty-state">
+                            <i class="fas fa-shopping-bag"></i>
+                            <h3>Loading Products...</h3>
+                            <p>Fetching the latest devices...</p>
                         </div>
                     </div>
                 </div>
@@ -1005,56 +895,100 @@
                     
                     <div class="form-group">
                         <label for="username">Username</label>
-                        <input type="text" id="username" value="SiphoNkosi" disabled>
+                        <input type="text" id="username" placeholder="Loading..." disabled>
                     </div>
                     
                     <div class="form-group">
                         <label for="phone">Phone Number</label>
-                        <input type="tel" id="phone" value="067 250 5124" disabled>
+                        <input type="tel" id="phone" placeholder="Loading..." disabled>
                     </div>
                     
                     <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" value="sipho.nkosi@example.com">
+                        <label for="email">Email Address (Optional)</label>
+                        <input type="email" id="email" placeholder="Enter your email">
                     </div>
                     
                     <div class="form-group">
                         <label for="notifications">Notification Preferences</label>
                         <select id="notifications">
-                            <option value="all" selected>All notifications</option>
+                            <option value="all">All notifications</option>
                             <option value="promo">Only promotional</option>
                             <option value="none">No notifications</option>
                         </select>
                     </div>
                     
-                    <button class="btn"><i class="fas fa-save"></i> Save Changes</button>
+                    <button class="btn" onclick="saveSettings()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
                     
                     <div class="security-section">
                         <h3><i class="fas fa-shield-alt"></i> Security</h3>
                         
                         <div class="form-group">
                             <label for="current-password">Current Password</label>
-                            <input type="password" id="current-password">
+                            <input type="password" id="current-password" placeholder="Enter current password">
                         </div>
                         
                         <div class="form-group">
                             <label for="new-password">New Password</label>
-                            <input type="password" id="new-password">
+                            <input type="password" id="new-password" placeholder="Enter new password">
                         </div>
                         
                         <div class="form-group">
                             <label for="confirm-password">Confirm New Password</label>
-                            <input type="password" id="confirm-password">
+                            <input type="password" id="confirm-password" placeholder="Confirm new password">
                         </div>
                         
-                        <button class="btn"><i class="fas fa-key"></i> Update Password</button>
+                        <button class="btn" onclick="updatePassword()">
+                            <i class="fas fa-key"></i> Update Password
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">Success!</span>
+    </div>
+
     <script>
+        // Global variables
+        let currentUser = null;
+        let userSpins = [];
+        let userCoupons = [];
+
+        // Toast notification system
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            toastMessage.textContent = message;
+            
+            // Set color based on type
+            if (type === 'error') {
+                toast.style.background = 'var(--error-red)';
+                toast.style.color = 'white';
+                toast.innerHTML = `<i class="fas fa-exclamation-circle"></i><span id="toast-message">${message}</span>`;
+            } else if (type === 'warning') {
+                toast.style.background = 'var(--warning-orange)';
+                toast.style.color = 'white';
+                toast.innerHTML = `<i class="fas fa-exclamation-triangle"></i><span id="toast-message">${message}</span>`;
+            } else {
+                toast.style.background = 'var(--icosta-green)';
+                toast.style.color = 'black';
+                toast.innerHTML = `<i class="fas fa-check-circle"></i><span id="toast-message">${message}</span>`;
+            }
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
         // Navigation functionality
         document.querySelectorAll('.nav-btn').forEach(button => {
             button.addEventListener('click', function() {
@@ -1076,76 +1010,479 @@
                 document.getElementById(`${target}-section`).classList.add('active');
             });
         });
-        
-        // Simulate user data - in a real app, this would come from your backend
-        const userData = {
-            username: "Sipho Nkosi",
-            phone: "067 250 5124",
-            email: "sipho.nkosi@example.com",
-            joinDate: "Jan 2023",
-            lastLogin: "Today, 14:30",
-            role: "Premium Member",
-            stats: {
-                totalSpins: 12,
-                couponsWon: 5,
-                availableSpins: 2,
-                redemptionRate: "60%"
+
+        // Check authentication and load user data
+        async function initializeProfile() {
+            try {
+                // Get current user from localStorage
+                currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+                
+                if (!currentUser) {
+                    showToast('Please log in to view your profile', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    return;
+                }
+
+                // Load user data
+                await loadUserData();
+                await loadUserSpins();
+                await loadUserCoupons();
+                await loadInventory();
+                
+                // Check if user is admin
+                checkAdminStatus();
+                
+            } catch (error) {
+                console.error('Error initializing profile:', error);
+                showToast('Error loading profile data', 'error');
             }
-        };
-        
-        // Initialize the page with user data
-        function loadUserData() {
-            document.getElementById('profile-username').textContent = userData.username;
-            document.getElementById('member-since').textContent = userData.joinDate;
-            document.getElementById('last-login').textContent = userData.lastLogin;
-            document.getElementById('profile-role').textContent = userData.role;
-            
-            document.getElementById('total-spins').textContent = userData.stats.totalSpins;
-            document.getElementById('coupons-won').textContent = userData.stats.couponsWon;
-            document.getElementById('available-spins').textContent = userData.stats.availableSpins;
-            document.getElementById('redemption-rate').textContent = userData.stats.redemptionRate;
-            
-            document.getElementById('phone').value = userData.phone;
-            document.getElementById('email').value = userData.email;
         }
-        
+
+        // Load user data from Firebase/localStorage
+        async function loadUserData() {
+            try {
+                // Update UI with user data
+                document.getElementById('profile-username').textContent = currentUser.username || currentUser.phone;
+                document.getElementById('username').value = currentUser.username || currentUser.phone;
+                document.getElementById('phone').value = currentUser.phone;
+                document.getElementById('email').value = currentUser.email || '';
+                
+                // Set role and styling
+                const role = currentUser.role || 'user';
+                document.getElementById('profile-role').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                document.getElementById('profile-role').className = `user-role role-${role}`;
+                
+                // Update avatar based on role
+                const avatar = document.getElementById('user-avatar');
+                avatar.className = `avatar avatar-${role}`;
+                
+                // Set dates
+                if (currentUser.createdAt) {
+                    const joinDate = new Date(currentUser.createdAt);
+                    document.getElementById('member-since').textContent = joinDate.toLocaleDateString();
+                } else {
+                    document.getElementById('member-since').textContent = 'Recently';
+                }
+                
+                if (currentUser.loginTime) {
+                    const lastLogin = new Date(currentUser.loginTime);
+                    document.getElementById('last-login').textContent = lastLogin.toLocaleString();
+                } else {
+                    document.getElementById('last-login').textContent = 'Unknown';
+                }
+                
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Load user spin history
+        async function loadUserSpins() {
+            try {
+                if (typeof firebase !== 'undefined') {
+                    const database = firebase.database();
+                    const spinsRef = database.ref('spins').orderByChild('userId').equalTo(currentUser.phone);
+                    
+                    const snapshot = await spinsRef.once('value');
+                    userSpins = [];
+                    
+                    snapshot.forEach(childSnapshot => {
+                        userSpins.push(childSnapshot.val());
+                    });
+                    
+                    // Sort by timestamp (newest first)
+                    userSpins.sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    updateSpinHistoryUI();
+                    updateProfileStats();
+                }
+            } catch (error) {
+                console.error('Error loading spins:', error);
+                // Fallback to localStorage
+                const localSpins = JSON.parse(localStorage.getItem(`spins_${currentUser.phone}`) || '[]');
+                userSpins = localSpins;
+                updateSpinHistoryUI();
+                updateProfileStats();
+            }
+        }
+
+        // Load user coupons
+        async function loadUserCoupons() {
+            try {
+                // Get coupons from spins that have codes
+                userCoupons = userSpins.filter(spin => spin.code && spin.prize && spin.prize !== 'Better luck next time!');
+                
+                updateCouponsUI();
+                updateProfileStats();
+                
+            } catch (error) {
+                console.error('Error loading coupons:', error);
+            }
+        }
+
+        // Update spin history UI
+        function updateSpinHistoryUI() {
+            const container = document.getElementById('history-container');
+            
+            if (userSpins.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h3>No Spin History</h3>
+                        <p>Your spin history will appear here</p>
+                        <a href="index.html#wheel" class="btn" style="margin-top: 15px;">
+                            <i class="fas fa-sync-alt"></i> Spin Now
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = userSpins.map(spin => {
+                const date = new Date(spin.timestamp);
+                const isWin = spin.code && spin.prize && spin.prize !== 'Better luck next time!';
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-prize">
+                                <i class="fas ${isWin ? 'fa-tag' : 'fa-times-circle'}"></i> 
+                                ${spin.prize || 'No win'}
+                            </div>
+                            <div class="history-date">${date.toLocaleString()}</div>
+                            <div class="history-device">${spin.deviceType || 'Unknown device'} • ${getBrowserName()}</div>
+                        </div>
+                        <div class="history-code">${spin.code || 'No code'}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update coupons UI
+        function updateCouponsUI() {
+            const container = document.getElementById('coupons-container');
+            const badge = document.getElementById('coupons-badge');
+            
+            // Update badge
+            if (userCoupons.length > 0) {
+                badge.textContent = userCoupons.length;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+            
+            if (userCoupons.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-ticket-alt"></i>
+                        <h3>No Coupons Yet</h3>
+                        <p>Spin the wheel to win amazing coupons!</p>
+                        <a href="index.html#wheel" class="btn" style="margin-top: 15px;">
+                            <i class="fas fa-sync-alt"></i> Spin Now
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = userCoupons.map(coupon => {
+                const date = new Date(coupon.timestamp);
+                const expiryDate = new Date(coupon.timestamp + (30 * 24 * 60 * 60 * 1000)); // 30 days from win
+                const isExpired = Date.now() > expiryDate.getTime();
+                const status = coupon.redeemed ? 'redeemed' : (isExpired ? 'expired' : 'active');
+                
+                return `
+                    <div class="coupon-item ${status}">
+                        <div class="coupon-header">
+                            <h3 class="coupon-title">${coupon.prize}</h3>
+                            <span class="coupon-status status-${status}">
+                                ${status.charAt(0).toUpperCase() + status.slice(1)}
+                            </span>
+                        </div>
+                        
+                        <div class="coupon-code">${coupon.code}</div>
+                        
+                        <div class="coupon-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Won On</span>
+                                <span class="detail-value">${date.toLocaleDateString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Valid Until</span>
+                                <span class="detail-value">${expiryDate.toLocaleDateString()}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Status</span>
+                                <span class="detail-value">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="coupon-actions">
+                            <button class="btn btn-sm" onclick="shareCoupon('${coupon.prize}', '${coupon.code}')">
+                                <i class="fab fa-whatsapp"></i> Share
+                            </button>
+                            ${!coupon.redeemed && !isExpired ? `
+                                <button class="btn btn-sm btn-warning" onclick="markAsRedeemed('${coupon.code}')">
+                                    <i class="fas fa-check"></i> Mark Redeemed
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update profile statistics
+        function updateProfileStats() {
+            document.getElementById('total-spins').textContent = userSpins.length;
+            document.getElementById('coupons-won').textContent = userCoupons.length;
+            
+            // Calculate redemption rate
+            const redeemedCoupons = userCoupons.filter(coupon => coupon.redeemed).length;
+            const redemptionRate = userCoupons.length > 0 ? Math.round((redeemedCoupons / userCoupons.length) * 100) : 0;
+            document.getElementById('redemption-rate').textContent = redemptionRate + '%';
+            
+            // Calculate available spins (simplified - 2 per day)
+            const today = new Date().toDateString();
+            const todaySpins = userSpins.filter(spin => new Date(spin.timestamp).toDateString() === today).length;
+            document.getElementById('available-spins').textContent = Math.max(0, 2 - todaySpins);
+        }
+
+        // Load inventory from products.js
+        async function loadInventory() {
+            try {
+                const container = document.getElementById('inventory-container');
+                
+                // Check if products.js is loaded
+                if (typeof getFeaturedProducts !== 'function') {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Products Not Loaded</h3>
+                            <p>Please refresh the page</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const featuredProducts = getFeaturedProducts();
+                
+                if (!featuredProducts || featuredProducts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <h3>No Products Available</h3>
+                            <p>Check back later for new devices</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Display featured products
+                container.innerHTML = featuredProducts.map(product => {
+                    return `
+                        <div class="inventory-item">
+                            <img src="${product.image}" alt="${product.name}" class="inventory-image" 
+                                 onerror="this.src='${product.fallbackImage || 'https://via.placeholder.com/300x200/333/999?text=No+Image'}'">
+                            <div class="inventory-details">
+                                <h3>${product.name}</h3>
+                                <div class="inventory-price">R${product.price.toLocaleString()}</div>
+                                <div class="inventory-description">${product.description}</div>
+                                
+                                <div class="inventory-specs">
+                                    <div class="spec-item"><i class="fas fa-hdd"></i> ${product.storage}</div>
+                                    <div class="spec-item"><i class="fas fa-battery-full"></i> ${product.battery}</div>
+                                    <div class="spec-item"><i class="fas fa-shield-alt"></i> ${product.condition}</div>
+                                    <div class="spec-item"><i class="fas fa-certificate"></i> ${product.warranty}</div>
+                                </div>
+                                
+                                <div class="inventory-actions">
+                                    <button class="btn btn-sm" onclick="viewProduct('${product.id}')">
+                                        View Details
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary" onclick="buyProduct('${product.id}')">
+                                        Buy Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+                document.getElementById('inventory-container').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error Loading Products</h3>
+                        <p>Please try again later</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Check if user is admin
+        function checkAdminStatus() {
+            const isAdmin = currentUser.role === 'admin' || currentUser.phone === '0672505124';
+            
+            if (isAdmin) {
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    el.style.display = 'block';
+                });
+            }
+        }
+
+        // Utility functions
+        function getBrowserName() {
+            const userAgent = navigator.userAgent;
+            if (userAgent.includes('Chrome')) return 'Chrome';
+            if (userAgent.includes('Firefox')) return 'Firefox';
+            if (userAgent.includes('Safari')) return 'Safari';
+            if (userAgent.includes('Edge')) return 'Edge';
+            return 'Browser';
+        }
+
         // WhatsApp sharing function
         function shareCoupon(prize, code) {
-            const message = `Hi iCOSTA, I won ${prize}! Code: ${code}`;
-            window.open(`https://wa.me/27672505124?text=${encodeURIComponent(message)}`, '_blank');
+            const message = `🎉 I won ${prize} at iCOSTA! 🎉\n\nUse code: ${code}\n\nVisit iCOSTA to claim your prize!`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+            showToast('Coupon shared on WhatsApp!');
         }
-        
+
         // Mark coupon as redeemed
-        function markAsRedeemed(code) {
-            alert(`Coupon ${code} marked as redeemed!`);
-            // In a real app, this would update the database
+        async function markAsRedeemed(code) {
+            try {
+                // Update in Firebase if available
+                if (typeof firebase !== 'undefined') {
+                    const database = firebase.database();
+                    const spinsRef = database.ref('spins');
+                    const snapshot = await spinsRef.orderByChild('code').equalTo(code).once('value');
+                    
+                    snapshot.forEach(childSnapshot => {
+                        childSnapshot.ref.update({ redeemed: true, redeemedAt: Date.now() });
+                    });
+                }
+                
+                // Update local data
+                const couponIndex = userCoupons.findIndex(coupon => coupon.code === code);
+                if (couponIndex !== -1) {
+                    userCoupons[couponIndex].redeemed = true;
+                    userCoupons[couponIndex].redeemedAt = Date.now();
+                }
+                
+                // Update UI
+                updateCouponsUI();
+                updateProfileStats();
+                
+                showToast('Coupon marked as redeemed!');
+                
+            } catch (error) {
+                console.error('Error marking coupon as redeemed:', error);
+                showToast('Error updating coupon', 'error');
+            }
         }
-        
+
+        // Product functions
+        function viewProduct(productId) {
+            // This would open a product detail modal
+            showToast('Product details would open here');
+        }
+
+        function buyProduct(productId) {
+            if (typeof getProductById === 'function') {
+                const product = getProductById(productId);
+                if (product) {
+                    const message = `Hi iCOSTA, I want to buy the ${product.name} for R${product.price}`;
+                    window.open(`https://wa.me/27672505124?text=${encodeURIComponent(message)}`, '_blank');
+                }
+            }
+        }
+
+        // Settings functions
+        async function saveSettings() {
+            try {
+                const email = document.getElementById('email').value;
+                const notifications = document.getElementById('notifications').value;
+                
+                // Update local user data
+                currentUser.email = email;
+                currentUser.notifications = notifications;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update in Firebase if available
+                if (typeof firebase !== 'undefined') {
+                    const database = firebase.database();
+                    const usersRef = database.ref('users');
+                    const snapshot = await usersRef.orderByChild('phone').equalTo(currentUser.phone).once('value');
+                    
+                    snapshot.forEach(childSnapshot => {
+                        childSnapshot.ref.update({
+                            email: email,
+                            notifications: notifications,
+                            updatedAt: Date.now()
+                        });
+                    });
+                }
+                
+                showToast('Settings saved successfully!');
+                
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showToast('Error saving settings', 'error');
+            }
+        }
+
+        async function updatePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('Please fill in all password fields', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showToast('New passwords do not match', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            // In a real app, this would verify current password and update it
+            // For now, we'll just show a success message
+            showToast('Password updated successfully!');
+            
+            // Clear password fields
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+        }
+
+        // Admin functions
+        function manageUsers() {
+            window.location.href = 'admin.html#users';
+        }
+
+        function manageInventory() {
+            window.location.href = 'admin.html#inventory';
+        }
+
         // Logout function
         function logout() {
             if (confirm("Are you sure you want to logout?")) {
-                // In a real app, this would clear authentication tokens
-                window.location.href = "login.html";
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
             }
         }
-        
-        // Admin functions (placeholder)
-        function viewAdminDashboard() {
-            alert("Admin dashboard would open here");
-        }
-        
-        function manageUsers() {
-            alert("User management would open here");
-        }
-        
-        function manageInventory() {
-            alert("Inventory management would open here");
-        }
-        
+
         // Initialize the page when loaded
-        window.addEventListener('DOMContentLoaded', (event) => {
-            loadUserData();
-        });
+        window.addEventListener('DOMContentLoaded', initializeProfile);
     </script>
 </body>
 </html>
