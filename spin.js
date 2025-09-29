@@ -86,10 +86,12 @@ class SpinGame {
             if (typeof firebase !== 'undefined' && firebase.database) {
                 this.database = firebase.database();
                 this.spinsRef = this.database.ref('spins');
+                this.usersRef = this.database.ref('users');
             } else {
                 console.warn('Firebase not available, using offline mode');
                 this.database = null;
                 this.spinsRef = null;
+                this.usersRef = null;
             }
             
             this.drawWheel();
@@ -521,7 +523,10 @@ class SpinGame {
             // 8. Update loyalty
             this.updateLoyalty();
             
-            // 9. Redirect after delay
+            // 9. Update user spins in Firebase
+            await this.updateUserSpinsInFirebase();
+            
+            // 10. Redirect after delay
             setTimeout(() => {
                 window.location.href = this.prizes[index].target;
             }, 3000);
@@ -540,6 +545,8 @@ class SpinGame {
     
     async logSpinToFirebase(index, couponCode, deviceType) {
         try {
+            const currentUser = JSON.parse(this.getLocalStorageItem('currentUser') || 'null');
+            
             await this.spinsRef.push({
                 prize: this.prizes[index].label,
                 code: couponCode,
@@ -547,21 +554,40 @@ class SpinGame {
                 device: navigator.userAgent,
                 deviceType: deviceType,
                 redeemed: false,
-                userId: this.getUserId()
+                userId: currentUser ? currentUser.phone : 'anonymous',
+                userPhone: currentUser ? currentUser.phone : 'anonymous'
             });
+            
             console.log("Spin logged to Firebase");
         } catch (error) {
             console.error("Firebase error:", error);
-            throw error;
+            // Don't throw error here - we still want to give the user their prize
         }
     }
     
-    getUserId() {
+    async updateUserSpinsInFirebase() {
         try {
             const currentUser = JSON.parse(this.getLocalStorageItem('currentUser') || 'null');
-            return currentUser ? currentUser.phone || 'anonymous' : 'anonymous';
+            
+            if (currentUser && this.usersRef) {
+                const userRef = this.usersRef.child(currentUser.phone);
+                const snapshot = await userRef.once('value');
+                
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    const updatedSpins = (userData.spins || 0) + 1;
+                    
+                    await userRef.update({
+                        spins: updatedSpins,
+                        lastSpin: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    console.log("User spins updated in Firebase");
+                }
+            }
         } catch (error) {
-            return 'anonymous';
+            console.error("Error updating user spins in Firebase:", error);
+            // Don't throw error - this is non-critical
         }
     }
     
