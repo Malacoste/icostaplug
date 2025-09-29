@@ -143,9 +143,11 @@
             border-bottom: 1px solid #333;
         }
         
-        .welcome-message h1 {
-            color: var(--icosta-green);
-            margin-bottom: 5px;
+        .welcome-message {
+            h1 {
+                color: var(--icosta-green);
+                margin-bottom: 5px;
+            }
         }
         
         .header-actions {
@@ -1128,7 +1130,7 @@
                     const weekAgo = new Date();
                     weekAgo.setDate(weekAgo.getDate() - 7);
                     const newUsersRef = database.ref('users').orderByChild('createdAt').startAt(weekAgo.getTime());
-                    const newUsersSnapshot = await newUsersRef.once('value')();
+                    const newUsersSnapshot = await newUsersRef.once('value');
                     document.getElementById('new-users').textContent = newUsersSnapshot.numChildren().toLocaleString();
                     
                 } catch (error) {
